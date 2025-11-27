@@ -1,0 +1,184 @@
+<?php
+/**
+ * Plugin Name: Hotel Hub Module - Housekeeping - Twin Optimiser
+ * Plugin URI: https://github.com/yourusername/hotelhubmodule-housekeeping-twinoptomiser
+ * Description: Twin room optimisation module for Hotel Hub App - displays booking grid to identify twin opportunities
+ * Version: 1.0.0
+ * Author: Your Name
+ * Author URI: https://yourwebsite.com
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: hhtm
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Define plugin constants
+define('HHTM_VERSION', '1.0.0');
+define('HHTM_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('HHTM_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('HHTM_PLUGIN_BASENAME', plugin_basename(__FILE__));
+
+/**
+ * Main plugin class.
+ */
+class HotelHub_Module_Twin_Optimiser {
+
+    /**
+     * Singleton instance.
+     *
+     * @var HotelHub_Module_Twin_Optimiser
+     */
+    private static $instance = null;
+
+    /**
+     * Get singleton instance.
+     *
+     * @return HotelHub_Module_Twin_Optimiser
+     */
+    public static function instance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    /**
+     * Constructor.
+     */
+    private function __construct() {
+        $this->load_dependencies();
+        $this->init_hooks();
+    }
+
+    /**
+     * Load plugin dependencies.
+     */
+    private function load_dependencies() {
+        require_once HHTM_PLUGIN_DIR . 'includes/class-hhtm-settings.php';
+        require_once HHTM_PLUGIN_DIR . 'includes/class-hhtm-frontend.php';
+    }
+
+    /**
+     * Initialize WordPress hooks.
+     */
+    private function init_hooks() {
+        // Register module with Hotel Hub
+        add_action('hha_register_modules', array($this, 'register_module'));
+
+        // Enqueue assets
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
+
+        // Initialize components
+        if (is_admin()) {
+            new HHTM_Settings();
+        }
+
+        new HHTM_Frontend();
+    }
+
+    /**
+     * Register module with Hotel Hub.
+     *
+     * @param HHA_Modules $modules_manager Hotel Hub modules manager instance.
+     */
+    public function register_module($modules_manager) {
+        $modules_manager->register_module(array(
+            'id'              => 'twin_optimiser',
+            'name'            => __('Twin Optimiser', 'hhtm'),
+            'description'     => __('Identify twin room opportunities to optimize bookings', 'hhtm'),
+            'category'        => 'housekeeping',
+            'icon'            => 'dashicons-groups',
+            'permission'      => 'hhtm_access_twin_optimiser',
+            'menu_order'      => 10,
+            'has_settings'    => true,
+            'settings_url'    => admin_url('admin.php?page=hhtm-settings'),
+            'frontend_url'    => home_url('/hotel-hub/?module=twin_optimiser'),
+            'version'         => HHTM_VERSION,
+        ));
+    }
+
+    /**
+     * Enqueue frontend assets.
+     */
+    public function enqueue_assets() {
+        // Only load on Hotel Hub pages
+        if (!function_exists('hha') || !hha()->modules->is_module_active('twin_optimiser')) {
+            return;
+        }
+
+        // Enqueue styles
+        wp_enqueue_style(
+            'hhtm-twin-optimiser',
+            HHTM_PLUGIN_URL . 'assets/css/twin-optimiser.css',
+            array(),
+            HHTM_VERSION
+        );
+
+        // Enqueue scripts
+        wp_enqueue_script('jquery');
+
+        wp_enqueue_script(
+            'hhtm-twin-optimiser',
+            HHTM_PLUGIN_URL . 'assets/js/twin-optimiser.js',
+            array('jquery'),
+            HHTM_VERSION,
+            true
+        );
+
+        // Localize script
+        wp_localize_script('hhtm-twin-optimiser', 'hhtmData', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('hhtm-twin-optimiser'),
+        ));
+    }
+
+    /**
+     * Get plugin version.
+     *
+     * @return string Version number.
+     */
+    public function get_version() {
+        return HHTM_VERSION;
+    }
+}
+
+/**
+ * Initialize plugin.
+ */
+function hhtm() {
+    return HotelHub_Module_Twin_Optimiser::instance();
+}
+
+// Initialize
+hhtm();
+
+/**
+ * Activation hook.
+ */
+register_activation_hook(__FILE__, function() {
+    // Register permission with workforce authentication
+    if (function_exists('wfa')) {
+        wfa()->permissions->register_permission(
+            'hhtm_access_twin_optimiser',
+            __('Access Twin Optimiser', 'hhtm'),
+            __('View and use the twin room optimiser module', 'hhtm')
+        );
+    }
+
+    // Flush rewrite rules
+    flush_rewrite_rules();
+});
+
+/**
+ * Deactivation hook.
+ */
+register_deactivation_hook(__FILE__, function() {
+    // Flush rewrite rules
+    flush_rewrite_rules();
+});
