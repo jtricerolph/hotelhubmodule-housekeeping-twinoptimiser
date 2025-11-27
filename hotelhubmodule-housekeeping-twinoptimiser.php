@@ -101,16 +101,37 @@ class HotelHub_Module_Twin_Optimiser {
      */
     public function get_config() {
         return array(
-            'id'           => 'twin_optimiser',
-            'name'         => __('Twin Optimiser', 'hhtm'),
-            'description'  => __('Identify twin room opportunities to optimize bookings', 'hhtm'),
-            'department'   => 'housekeeping',
-            'icon'         => 'dashicons-groups',
-            'color'        => '#FFD700',
-            'order'        => 10,
-            'permissions'  => array('hhtm_access_twin_optimiser'),
-            'integrations' => array('newbook'),
+            'id'             => 'twin_optimiser',
+            'name'           => __('Twin Optimiser', 'hhtm'),
+            'description'    => __('Identify twin room opportunities to optimize bookings', 'hhtm'),
+            'department'     => 'housekeeping',
+            'icon'           => 'dashicons-groups',
+            'color'          => '#FFD700',
+            'order'          => 10,
+            'permissions'    => array('hhtm_access_twin_optimiser'),
+            'integrations'   => array('newbook'),
+            'settings_pages' => array(
+                array(
+                    'slug'       => 'hhtm-settings',
+                    'title'      => __('Twin Optimiser Settings', 'hhtm'),
+                    'menu_title' => __('Settings', 'hhtm'),
+                    'callback'   => array($this, 'render_settings_page'),
+                ),
+            ),
         );
+    }
+
+    /**
+     * Render settings page.
+     *
+     * Called by Hotel Hub admin menu system.
+     *
+     * @return void
+     */
+    public function render_settings_page() {
+        // Get settings instance and render
+        $settings = new HHTM_Settings();
+        $settings->render_settings_page();
     }
 
     /**

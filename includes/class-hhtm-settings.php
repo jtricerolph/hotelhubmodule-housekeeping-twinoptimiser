@@ -17,23 +17,8 @@ class HHTM_Settings {
      * Constructor.
      */
     public function __construct() {
-        add_action('admin_menu', array($this, 'add_settings_page'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_post_hhtm_save_settings', array($this, 'save_settings'));
-    }
-
-    /**
-     * Add settings page to admin menu.
-     */
-    public function add_settings_page() {
-        add_submenu_page(
-            'hotel-hub',
-            __('Twin Optimiser Settings', 'hhtm'),
-            __('Twin Optimiser', 'hhtm'),
-            'manage_options',
-            'hhtm-settings',
-            array($this, 'render_settings_page')
-        );
     }
 
     /**
@@ -45,6 +30,8 @@ class HHTM_Settings {
 
     /**
      * Render settings page.
+     *
+     * Called by main plugin class via Hotel Hub admin menu system.
      */
     public function render_settings_page() {
         if (!current_user_can('manage_options')) {
