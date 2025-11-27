@@ -17,7 +17,6 @@ class HHTM_Frontend {
      * Constructor.
      */
     public function __construct() {
-        add_action('hha_module_content_twin_optimiser', array($this, 'render_module_content'));
         add_action('wp_ajax_hhtm_refresh_table', array($this, 'ajax_refresh_table'));
     }
 

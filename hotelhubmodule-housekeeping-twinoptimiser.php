@@ -79,6 +79,7 @@ class HotelHub_Module_Twin_Optimiser {
             new HHTM_Settings();
         }
 
+        // Initialize AJAX handlers
         new HHTM_Frontend();
     }
 
@@ -88,19 +89,42 @@ class HotelHub_Module_Twin_Optimiser {
      * @param HHA_Modules $modules_manager Hotel Hub modules manager instance.
      */
     public function register_module($modules_manager) {
-        $modules_manager->register_module(array(
-            'id'              => 'twin_optimiser',
-            'name'            => __('Twin Optimiser', 'hhtm'),
-            'description'     => __('Identify twin room opportunities to optimize bookings', 'hhtm'),
-            'category'        => 'housekeeping',
-            'icon'            => 'dashicons-groups',
-            'permission'      => 'hhtm_access_twin_optimiser',
-            'menu_order'      => 10,
-            'has_settings'    => true,
-            'settings_url'    => admin_url('admin.php?page=hhtm-settings'),
-            'frontend_url'    => home_url('/hotel-hub/?module=twin_optimiser'),
-            'version'         => HHTM_VERSION,
-        ));
+        $modules_manager->register_module($this);
+    }
+
+    /**
+     * Get module configuration.
+     *
+     * Required by HHA_Modules.
+     *
+     * @return array Module configuration.
+     */
+    public function get_config() {
+        return array(
+            'id'           => 'twin_optimiser',
+            'name'         => __('Twin Optimiser', 'hhtm'),
+            'description'  => __('Identify twin room opportunities to optimize bookings', 'hhtm'),
+            'department'   => 'housekeeping',
+            'icon'         => 'dashicons-groups',
+            'color'        => '#FFD700',
+            'order'        => 10,
+            'permissions'  => array('hhtm_access_twin_optimiser'),
+            'integrations' => array('newbook'),
+        );
+    }
+
+    /**
+     * Render module content.
+     *
+     * Required by HHA_Modules.
+     *
+     * @param array $params Optional parameters.
+     * @return void
+     */
+    public function render($params = array()) {
+        // Get frontend instance and render content
+        $frontend = new HHTM_Frontend();
+        $frontend->render_module_content();
     }
 
     /**
@@ -108,7 +132,13 @@ class HotelHub_Module_Twin_Optimiser {
      */
     public function enqueue_assets() {
         // Only load on Hotel Hub pages
-        if (!function_exists('hha') || !hha()->modules->is_module_active('twin_optimiser')) {
+        if (!function_exists('hha')) {
+            return;
+        }
+
+        // Check if we're on a Hotel Hub page
+        $app_page_id = get_option('hha_app_page_id');
+        if (!$app_page_id || !is_page($app_page_id)) {
             return;
         }
 
