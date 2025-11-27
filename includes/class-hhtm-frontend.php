@@ -180,7 +180,13 @@ class HHTM_Frontend {
 
         // Process each booking
         foreach ($bookings as $booking) {
-            $room_name = $booking['room_name'];
+            // NewBook API uses 'site_name' for room name
+            $room_name = isset($booking['site_name']) ? $booking['site_name'] : '';
+
+            // Skip bookings without room assignment
+            if (empty($room_name)) {
+                continue;
+            }
 
             // Initialize room if not exists
             if (!isset($grid[$room_name])) {
@@ -188,9 +194,9 @@ class HHTM_Frontend {
                 $rooms[] = $room_name;
             }
 
-            // Get booking dates
-            $checkin = date('Y-m-d', strtotime($booking['arrival_date']));
-            $checkout = date('Y-m-d', strtotime($booking['departure_date']));
+            // Get booking dates (NewBook API field names)
+            $checkin = date('Y-m-d', strtotime($booking['booking_arrival']));
+            $checkout = date('Y-m-d', strtotime($booking['booking_departure']));
 
             // Get bed type
             $bed_type = $this->get_bed_type($booking, $custom_field_name);
@@ -201,8 +207,8 @@ class HHTM_Frontend {
                 if ($date >= $checkin && $date < $checkout) {
                     if (!isset($grid[$room_name][$date])) {
                         $grid[$room_name][$date] = array(
-                            'booking_id'  => $booking['id'],
-                            'booking_ref' => $booking['booking_reference'],
+                            'booking_id'  => $booking['booking_id'],
+                            'booking_ref' => $booking['booking_reference_id'],
                             'bed_type'    => $bed_type,
                             'is_twin'     => $is_twin,
                             'checkin'     => $checkin,
