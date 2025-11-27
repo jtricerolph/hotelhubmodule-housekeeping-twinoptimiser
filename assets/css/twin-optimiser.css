@@ -3,10 +3,10 @@
  * Mobile-optimized for portrait orientation
  */
 
-/* Container */
+/* Container - No padding (parent hha-module-container already has padding) */
 .hhtm-container {
     margin: 0;
-    padding: 15px 10px;
+    padding: 0;
     background: #fff;
     max-width: 100%;
 }
@@ -224,7 +224,7 @@
 /* Responsive Design - Smaller phones */
 @media screen and (max-width: 400px) {
     .hhtm-container {
-        padding: 10px 5px;
+        padding: 0;
     }
 
     .hhtm-header h2 {
@@ -266,7 +266,7 @@
 /* Landscape phones and tablets */
 @media screen and (min-width: 600px) {
     .hhtm-container {
-        padding: 20px 15px;
+        padding: 0;
     }
 
     .hhtm-header h2 {
@@ -299,7 +299,7 @@
 /* Tablets and small desktop */
 @media screen and (min-width: 900px) {
     .hhtm-container {
-        padding: 20px;
+        padding: 0;
     }
 
     .hhtm-header h2 {
