@@ -57,9 +57,10 @@ class HHTM_Settings {
                     <input type="hidden" name="action" value="hhtm_save_settings">
                     <?php wp_nonce_field('hhtm_save_settings', 'hhtm_settings_nonce'); ?>
 
-                    <table class="form-table">
+                    <table class="form-table hhtm-settings-table">
                         <thead>
                             <tr>
+                                <th scope="col" style="width: 60px;"><?php _e('Enabled', 'hhtm'); ?></th>
                                 <th scope="col"><?php _e('Location', 'hhtm'); ?></th>
                                 <th scope="col"><?php _e('Custom Field Name for Twin Detection', 'hhtm'); ?></th>
                             </tr>
@@ -68,9 +69,18 @@ class HHTM_Settings {
                             <?php foreach ($locations as $location): ?>
                                 <?php
                                 $location_id = $location->workforce_id;
-                                $custom_field = isset($location_settings[$location_id]) ? $location_settings[$location_id]['custom_field'] : 'Bed Type';
+                                $is_enabled = isset($location_settings[$location_id]['enabled']) ? (bool) $location_settings[$location_id]['enabled'] : false;
+                                $custom_field = isset($location_settings[$location_id]['custom_field']) ? $location_settings[$location_id]['custom_field'] : 'Bed Type';
                                 ?>
                                 <tr>
+                                    <td style="text-align: center;">
+                                        <input
+                                            type="checkbox"
+                                            name="hhtm_location_settings[<?php echo esc_attr($location_id); ?>][enabled]"
+                                            value="1"
+                                            <?php checked($is_enabled, true); ?>
+                                        >
+                                    </td>
                                     <td>
                                         <strong><?php echo esc_html($location->name); ?></strong>
                                     </td>
@@ -109,6 +119,36 @@ class HHTM_Settings {
         </div>
 
         <style>
+            .hhtm-settings-table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 20px;
+            }
+
+            .hhtm-settings-table thead th {
+                font-weight: 600;
+                padding: 12px 10px;
+                background: #f0f0f1;
+                border-bottom: 2px solid #ddd;
+                text-align: left;
+            }
+
+            .hhtm-settings-table tbody td {
+                padding: 15px 10px;
+                border-bottom: 1px solid #e0e0e0;
+                vertical-align: top;
+            }
+
+            .hhtm-settings-table tbody tr:hover {
+                background: #f9f9f9;
+            }
+
+            .hhtm-settings-table input[type="checkbox"] {
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+            }
+
             .hhtm-settings-info {
                 margin-top: 30px;
                 padding: 20px;
@@ -123,16 +163,6 @@ class HHTM_Settings {
 
             .hhtm-settings-info ul {
                 margin-left: 20px;
-            }
-
-            .form-table thead th {
-                font-weight: 600;
-                padding: 10px;
-                background: #f0f0f1;
-            }
-
-            .form-table tbody td {
-                padding: 15px 10px;
             }
         </style>
         <?php
@@ -159,6 +189,7 @@ class HHTM_Settings {
         $sanitized_settings = array();
         foreach ($location_settings as $location_id => $settings) {
             $sanitized_settings[absint($location_id)] = array(
+                'enabled'      => isset($settings['enabled']) ? (bool) $settings['enabled'] : false,
                 'custom_field' => sanitize_text_field($settings['custom_field']),
             );
         }
@@ -221,5 +252,22 @@ class HHTM_Settings {
 
         // Default to 'Bed Type'
         return 'Bed Type';
+    }
+
+    /**
+     * Check if Twin Optimiser is enabled for a location.
+     *
+     * @param int $location_id Workforce location ID.
+     * @return bool True if enabled, false otherwise.
+     */
+    public static function is_location_enabled($location_id) {
+        $location_settings = get_option('hhtm_location_settings', array());
+
+        if (isset($location_settings[$location_id]['enabled'])) {
+            return (bool) $location_settings[$location_id]['enabled'];
+        }
+
+        // Default to disabled
+        return false;
     }
 }

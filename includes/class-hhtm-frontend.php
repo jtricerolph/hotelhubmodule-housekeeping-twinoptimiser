@@ -44,6 +44,14 @@ class HHTM_Frontend {
             return;
         }
 
+        // Check if module is enabled for this location
+        if (!HHTM_Settings::is_location_enabled($hotel->location_id)) {
+            echo '<div class="hhtm-error">';
+            echo '<p>' . __('Twin Optimiser is not enabled for this location. Please contact your administrator.', 'hhtm') . '</p>';
+            echo '</div>';
+            return;
+        }
+
         // Default parameters
         $start_date = isset($_GET['start_date']) ? sanitize_text_field($_GET['start_date']) : date('Y-m-d');
         $days = 14;
