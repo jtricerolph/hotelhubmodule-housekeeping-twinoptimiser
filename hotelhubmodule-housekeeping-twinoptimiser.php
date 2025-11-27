@@ -68,6 +68,9 @@ class HotelHub_Module_Twin_Optimiser {
      * Initialize WordPress hooks.
      */
     private function init_hooks() {
+        // Register permission with workforce authentication
+        add_action('init', array($this, 'register_permission'), 15);
+
         // Register module with Hotel Hub
         add_action('hha_register_modules', array($this, 'register_module'));
 
@@ -81,6 +84,22 @@ class HotelHub_Module_Twin_Optimiser {
 
         // Initialize AJAX handlers
         new HHTM_Frontend();
+    }
+
+    /**
+     * Register permission with Workforce Authentication.
+     */
+    public function register_permission() {
+        if (!function_exists('wfa')) {
+            return;
+        }
+
+        wfa()->permissions->register_permission(
+            'hhtm_access_twin_optimiser',
+            __('Access Twin Optimiser', 'hhtm'),
+            __('View and use the twin room optimiser module', 'hhtm'),
+            'Twin Optimiser'
+        );
     }
 
     /**
