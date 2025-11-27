@@ -56,13 +56,13 @@
     -webkit-overflow-scrolling: touch;
 }
 
-/* Booking Grid Table */
+/* Booking Grid Table - Compact Mobile-First */
 .hhtm-booking-grid {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    min-width: 900px;
-    font-size: 11px;
+    min-width: 500px;
+    font-size: 9px;
 }
 
 /* Headers */
@@ -72,12 +72,12 @@
 }
 
 .hhtm-room-header {
-    width: 60px;
-    min-width: 60px;
-    text-align: left;
-    padding: 10px 6px;
+    width: 35px;
+    min-width: 35px;
+    text-align: center;
+    padding: 6px 2px;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 9px;
     position: sticky;
     left: 0;
     z-index: 10;
@@ -86,26 +86,29 @@
 
 .hhtm-date-header {
     text-align: center;
-    padding: 6px 3px;
+    padding: 4px 1px;
     font-weight: 600;
-    font-size: 10px;
+    font-size: 8px;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
+    width: 28px;
+    min-width: 28px;
 }
 
 .hhtm-date-label {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 0px;
+    line-height: 1.1;
 }
 
 .hhtm-day {
-    font-size: 10px;
+    font-size: 7px;
     text-transform: uppercase;
     opacity: 0.8;
 }
 
 .hhtm-date {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
 }
 
@@ -114,29 +117,31 @@
     border-bottom: 2px solid #3498db;
 }
 
-/* Room Cell */
+/* Room Cell - Compact */
 .hhtm-room-cell {
     background: #ecf0f1;
-    padding: 8px 6px;
-    font-weight: 600;
+    padding: 4px 2px;
+    font-weight: 700;
     color: #2c3e50;
     border-right: 2px solid #bdc3c7;
     position: sticky;
     left: 0;
     z-index: 5;
-    font-size: 12px;
-    word-wrap: break-word;
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.2;
 }
 
-/* Booking Cells */
+/* Booking Cells - Compact, No Text */
 .hhtm-booking-cell {
-    padding: 6px 4px;
+    padding: 0;
     text-align: center;
     border: 1px solid #ddd;
     vertical-align: middle;
     position: relative;
-    min-height: 45px;
-    cursor: default;
+    height: 25px;
+    min-height: 25px;
+    cursor: pointer;
 }
 
 /* Vacant/Empty Cell - Grey */
@@ -156,34 +161,17 @@
     border-left: 3px solid #FFA500;
 }
 
-/* Booking Content */
+/* Booking Content - Hidden for compact view */
 .hhtm-booking-content {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    font-size: 11px;
-    line-height: 1.3;
+    display: none;
 }
 
 .hhtm-booking-ref {
-    font-weight: 700;
-    color: #2c3e50;
-    font-size: 11px;
-}
-
-.hhtm-cell-twin .hhtm-booking-ref {
-    color: #000;
+    display: none;
 }
 
 .hhtm-bed-type {
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: #666;
-}
-
-.hhtm-cell-twin .hhtm-bed-type {
-    color: #333;
+    display: none;
 }
 
 /* Hover Effects */
@@ -253,34 +241,25 @@
     }
 
     .hhtm-booking-grid {
-        min-width: 800px;
-        font-size: 10px;
+        min-width: 450px;
     }
 
     .hhtm-room-header,
     .hhtm-room-cell {
-        width: 55px;
-        min-width: 55px;
-        font-size: 11px;
-        padding: 8px 4px;
+        width: 32px;
+        min-width: 32px;
+        font-size: 9px;
+    }
+
+    .hhtm-date-header {
+        width: 26px;
+        min-width: 26px;
+        font-size: 7px;
     }
 
     .hhtm-booking-cell {
-        padding: 5px 3px;
-        min-height: 40px;
-    }
-
-    .hhtm-booking-content {
-        font-size: 10px;
-        gap: 2px;
-    }
-
-    .hhtm-booking-ref {
-        font-size: 10px;
-    }
-
-    .hhtm-bed-type {
-        font-size: 8px;
+        height: 22px;
+        min-height: 22px;
     }
 }
 
@@ -296,30 +275,24 @@
 
     .hhtm-room-header,
     .hhtm-room-cell {
-        width: 70px;
-        min-width: 70px;
-        font-size: 13px;
+        width: 40px;
+        min-width: 40px;
+        font-size: 10px;
+    }
+
+    .hhtm-date-header {
+        width: 32px;
+        min-width: 32px;
+        font-size: 9px;
     }
 
     .hhtm-booking-grid {
-        min-width: 1000px;
-        font-size: 12px;
+        min-width: 600px;
     }
 
     .hhtm-booking-cell {
-        padding: 8px 5px;
-    }
-
-    .hhtm-booking-content {
-        font-size: 12px;
-    }
-
-    .hhtm-booking-ref {
-        font-size: 12px;
-    }
-
-    .hhtm-bed-type {
-        font-size: 10px;
+        height: 28px;
+        min-height: 28px;
     }
 }
 
@@ -335,17 +308,25 @@
 
     .hhtm-room-header,
     .hhtm-room-cell {
-        width: 80px;
-        min-width: 80px;
-        font-size: 14px;
-    }
-
-    .hhtm-booking-grid {
-        min-width: 1200px;
+        width: 45px;
+        min-width: 45px;
+        font-size: 11px;
     }
 
     .hhtm-date-header {
-        padding: 8px 5px;
+        width: 36px;
+        min-width: 36px;
+        padding: 6px 2px;
+        font-size: 10px;
+    }
+
+    .hhtm-booking-grid {
+        min-width: 700px;
+    }
+
+    .hhtm-booking-cell {
+        height: 30px;
+        min-height: 30px;
     }
 }
 

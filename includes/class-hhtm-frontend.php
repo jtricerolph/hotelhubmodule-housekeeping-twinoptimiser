@@ -333,8 +333,21 @@ class HHTM_Frontend {
                                 if ($booking['is_twin']) {
                                     $cell_class = 'hhtm-cell-twin';
                                 }
+
+                                // Build tooltip text
+                                $tooltip = sprintf(
+                                    'Ref: %s | %s-%s',
+                                    $booking['booking_ref'],
+                                    date('d/m', strtotime($booking['checkin'])),
+                                    date('d/m', strtotime($booking['checkout']))
+                                );
+                                if (!empty($booking['bed_type'])) {
+                                    $tooltip .= ' | ' . $booking['bed_type'];
+                                }
                                 ?>
-                                <td class="hhtm-booking-cell <?php echo esc_attr($cell_class); ?>" colspan="<?php echo esc_attr($colspan); ?>">
+                                <td class="hhtm-booking-cell <?php echo esc_attr($cell_class); ?>"
+                                    colspan="<?php echo esc_attr($colspan); ?>"
+                                    title="<?php echo esc_attr($tooltip); ?>">
                                     <div class="hhtm-booking-content">
                                         <span class="hhtm-booking-ref"><?php echo esc_html($booking['booking_ref']); ?></span>
                                         <?php if (!empty($booking['bed_type'])): ?>
@@ -346,7 +359,7 @@ class HHTM_Frontend {
                                 $previous_booking = $booking;
                             else:
                                 ?>
-                                <td class="hhtm-booking-cell hhtm-cell-vacant"></td>
+                                <td class="hhtm-booking-cell hhtm-cell-vacant" title="Vacant"></td>
                                 <?php
                                 $previous_booking = null;
                             endif;
