@@ -100,14 +100,16 @@ class HHTM_Frontend {
         $period_to = date('Y-m-d', strtotime($start_date . ' + ' . ($days - 1) . ' days'));
 
         // Get bookings
-        $bookings = $api->get_bookings($period_from, $period_to, 'staying');
+        $response = $api->get_bookings($period_from, $period_to, 'staying');
 
-        if (is_wp_error($bookings)) {
+        if (!$response['success']) {
             echo '<div class="hhtm-error">';
-            echo '<p>' . sprintf(__('Error fetching bookings: %s', 'hhtm'), $bookings->get_error_message()) . '</p>';
+            echo '<p>' . sprintf(__('Error fetching bookings: %s', 'hhtm'), esc_html($response['message'])) . '</p>';
             echo '</div>';
             return;
         }
+
+        $bookings = isset($response['data']) ? $response['data'] : array();
 
         if (empty($bookings)) {
             echo '<div class="hhtm-no-results">';
