@@ -134,11 +134,26 @@ class HHTM_Frontend {
             return;
         }
 
+        // Debug: Log booking structure
+        error_log('HHTM: Found ' . count($bookings) . ' bookings');
+        if (!empty($bookings)) {
+            error_log('HHTM: First booking structure: ' . print_r($bookings[0], true));
+        }
+
         // Get custom field name for this location
         $custom_field_name = HHTM_Settings::get_location_custom_field($hotel->location_id);
 
         // Process bookings into grid structure
         $grid_data = $this->process_bookings($bookings, $start_date, $days, $custom_field_name);
+
+        // Check if processing resulted in any rooms
+        if (empty($grid_data['rooms'])) {
+            echo '<div class="hhtm-error">';
+            echo '<p>' . __('No rooms found in bookings. Please check that bookings have room assignments.', 'hhtm') . '</p>';
+            echo '<p style="font-size: 12px; color: #666;">' . sprintf(__('Found %d bookings but could not extract room information.', 'hhtm'), count($bookings)) . '</p>';
+            echo '</div>';
+            return;
+        }
 
         // Render grid
         $this->render_grid_table($grid_data, $start_date, $days);
