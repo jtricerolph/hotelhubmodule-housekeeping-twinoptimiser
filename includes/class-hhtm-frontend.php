@@ -44,6 +44,14 @@ class HHTM_Frontend {
             return;
         }
 
+        // Check if hotel has a location assigned
+        if (empty($hotel->location_id)) {
+            echo '<div class="hhtm-error">';
+            echo '<p>' . __('This hotel does not have a workforce location assigned. Please contact your administrator.', 'hhtm') . '</p>';
+            echo '</div>';
+            return;
+        }
+
         // Check if module is enabled for this location
         if (!HHTM_Settings::is_location_enabled($hotel->location_id)) {
             echo '<div class="hhtm-error">';
