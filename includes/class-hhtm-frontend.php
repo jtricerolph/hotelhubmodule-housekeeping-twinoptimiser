@@ -330,7 +330,7 @@ class HHTM_Frontend {
         }
 
         // Check user permissions
-        if (!current_user_can('hhtm_access_twin_optimiser')) {
+        if (!wfa_user_can('hhtm_access_twin_optimiser')) {
             wp_send_json_error(array('message' => __('You do not have permission to access this module.', 'hhtm')));
         }
 
