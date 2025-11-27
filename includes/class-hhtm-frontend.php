@@ -35,7 +35,7 @@ class HHTM_Frontend {
         }
 
         // Get hotel details
-        $hotel = hha()->hotels->get_hotel($hotel_id);
+        $hotel = hha()->hotels->get($hotel_id);
 
         if (!$hotel) {
             echo '<div class="hhtm-error">';
@@ -351,7 +351,7 @@ class HHTM_Frontend {
         }
 
         // Get hotel
-        $hotel = hha()->hotels->get_hotel($hotel_id);
+        $hotel = hha()->hotels->get($hotel_id);
 
         if (!$hotel) {
             wp_send_json_error(array('message' => __('Hotel not found.', 'hhtm')));
