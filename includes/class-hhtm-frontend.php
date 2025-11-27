@@ -82,7 +82,7 @@ class HHTM_Frontend {
      */
     private function render_booking_grid($hotel, $start_date, $days) {
         // Get hotel integration details
-        $integration = hha()->integrations->get_hotel_integration($hotel->id, 'newbook');
+        $integration = hha()->integrations->get_settings($hotel->id, 'newbook');
 
         if (!$integration) {
             echo '<div class="hhtm-no-integration">';
@@ -93,12 +93,7 @@ class HHTM_Frontend {
 
         // Create NewBook API client
         require_once HHA_PLUGIN_DIR . 'includes/class-hha-newbook-api.php';
-        $api = new HHA_NewBook_API(array(
-            'username' => $integration->username,
-            'password' => $integration->password,
-            'api_key'  => $integration->api_key,
-            'region'   => $integration->region,
-        ));
+        $api = new HHA_NewBook_API($integration);
 
         // Calculate date range
         $period_from = $start_date;
