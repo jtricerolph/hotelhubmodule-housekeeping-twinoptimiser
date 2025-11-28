@@ -174,9 +174,53 @@
     display: none;
 }
 
+/* Task Cells */
+.hhtm-cell-task {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.hhtm-task-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 2px;
+}
+
+.hhtm-task-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.hhtm-task-name {
+    display: none; /* Hidden in mobile compact view */
+    font-size: 8px;
+    text-align: center;
+    margin-top: 2px;
+}
+
+/* Task Indicators on Booking Cells */
+.hhtm-task-indicators {
+    display: flex;
+    gap: 2px;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    flex-wrap: wrap;
+}
+
+.hhtm-task-indicator {
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.8;
+}
+
 /* Hover Effects */
 .hhtm-cell-booked:hover,
-.hhtm-cell-twin:hover {
+.hhtm-cell-twin:hover,
+.hhtm-cell-task:hover {
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
     z-index: 2;
 }
@@ -294,6 +338,15 @@
         height: 28px;
         min-height: 28px;
     }
+
+    /* Task elements on landscape/tablets */
+    .hhtm-task-icon {
+        font-size: 16px;
+    }
+
+    .hhtm-task-indicator {
+        font-size: 12px;
+    }
 }
 
 /* Tablets and small desktop */
@@ -327,6 +380,20 @@
     .hhtm-booking-cell {
         height: 30px;
         min-height: 30px;
+    }
+
+    /* Task elements on desktop - show names */
+    .hhtm-task-icon {
+        font-size: 18px;
+    }
+
+    .hhtm-task-name {
+        display: block;
+        font-size: 9px;
+    }
+
+    .hhtm-task-indicator {
+        font-size: 14px;
     }
 }
 

@@ -127,15 +127,33 @@ class HHTM_Frontend {
 
         $bookings = isset($response['data']) ? $response['data'] : array();
 
-        if (empty($bookings)) {
+        // Get task types configuration
+        $task_types = isset($integration['task_types']) ? $integration['task_types'] : array();
+
+        // Fetch tasks if task types are configured
+        $tasks = array();
+        if (!empty($task_types)) {
+            // Get all task type IDs
+            $task_type_ids = array_map(function($type) {
+                return $type['id'];
+            }, $task_types);
+
+            $tasks_response = $api->get_tasks($period_from, $period_to, $task_type_ids, true);
+
+            if ($tasks_response['success']) {
+                $tasks = isset($tasks_response['data']) ? $tasks_response['data'] : array();
+            }
+        }
+
+        if (empty($bookings) && empty($tasks)) {
             echo '<div class="hhtm-no-results">';
-            echo '<p>' . __('No bookings found for the selected date range.', 'hhtm') . '</p>';
+            echo '<p>' . __('No bookings or tasks found for the selected date range.', 'hhtm') . '</p>';
             echo '</div>';
             return;
         }
 
         // Debug: Log booking structure
-        error_log('HHTM: Found ' . count($bookings) . ' bookings');
+        error_log('HHTM: Found ' . count($bookings) . ' bookings and ' . count($tasks) . ' tasks');
         if (!empty($bookings)) {
             error_log('HHTM: First booking structure: ' . print_r($bookings[0], true));
         }
@@ -146,8 +164,8 @@ class HHTM_Frontend {
         // Get categories sort configuration
         $categories_sort = isset($integration['categories_sort']) ? $integration['categories_sort'] : array();
 
-        // Process bookings into grid structure
-        $grid_data = $this->process_bookings($bookings, $start_date, $days, $custom_field_name, $categories_sort);
+        // Process bookings and tasks into grid structure
+        $grid_data = $this->process_bookings($bookings, $tasks, $start_date, $days, $custom_field_name, $categories_sort, $task_types);
 
         // Check if processing resulted in any rooms
         if (empty($grid_data['rooms'])) {
@@ -163,16 +181,18 @@ class HHTM_Frontend {
     }
 
     /**
-     * Process bookings into grid structure.
+     * Process bookings and tasks into grid structure.
      *
      * @param array  $bookings         Array of booking objects.
+     * @param array  $tasks            Array of task objects.
      * @param string $start_date       Start date (Y-m-d).
      * @param int    $days             Number of days.
      * @param string $custom_field_name Custom field name for twin detection.
      * @param array  $categories_sort  Categories and sites sort configuration.
+     * @param array  $task_types       Task types configuration with colors and icons.
      * @return array Processed grid data.
      */
-    private function process_bookings($bookings, $start_date, $days, $custom_field_name, $categories_sort = array()) {
+    private function process_bookings($bookings, $tasks, $start_date, $days, $custom_field_name, $categories_sort = array(), $task_types = array()) {
         $grid = array();
         $rooms = array();
 
@@ -283,6 +303,123 @@ class HHTM_Frontend {
                             'checkout'    => $checkout,
                         );
                     }
+                }
+            }
+        }
+
+        // Process tasks
+        if (!empty($tasks) && !empty($task_types)) {
+            // Build task types map for quick lookup
+            $task_types_map = array();
+            foreach ($task_types as $task_type) {
+                if (isset($task_type['id'])) {
+                    $task_types_map[$task_type['id']] = $task_type;
+                }
+            }
+
+            // Process each task
+            foreach ($tasks as $task) {
+                // Skip tasks that don't occupy a location
+                if (empty($task['task_location_occupy']) || $task['task_location_occupy'] != 1) {
+                    continue;
+                }
+
+                // Determine room/site information
+                $room_name = '';
+                $room_site_id = '';
+
+                // First try task_location_id (direct site assignment)
+                if (!empty($task['task_location_id'])) {
+                    $room_site_id = $task['task_location_id'];
+                    $room_name = isset($task['task_location_name']) ? $task['task_location_name'] : '';
+                }
+
+                // Fallback to booking site info
+                if (empty($room_name) && !empty($task['booking_site_name'])) {
+                    $room_name = $task['booking_site_name'];
+                    $room_site_id = isset($task['booking_site_id']) ? $task['booking_site_id'] : '';
+                }
+
+                // Skip tasks without site assignment
+                if (empty($room_name)) {
+                    continue;
+                }
+
+                // Skip excluded sites (using site_id for matching)
+                if ($room_site_id && in_array($room_site_id, $excluded_sites)) {
+                    continue;
+                }
+
+                // Skip sites from excluded categories (using site_id and category_id for matching)
+                if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                    $site_category_id = $site_to_category[$room_site_id]['category_id'];
+                    if (in_array($site_category_id, $excluded_categories)) {
+                        continue;
+                    }
+                }
+
+                // Initialize room if not exists
+                if (!isset($grid[$room_name])) {
+                    // Determine category name (use configured category if site_id matches, otherwise Uncategorized)
+                    $category_name = 'Uncategorized';
+                    if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                        $category_name = $site_to_category[$room_site_id]['category_name'];
+                    }
+
+                    $grid[$room_name] = array(
+                        'category' => $category_name,
+                        'site_id'  => $room_site_id,
+                    );
+                    $rooms[] = $room_name;
+                }
+
+                // Get task date (NewBook API returns task_when_date as YYYY-MM-DD)
+                $task_date = isset($task['task_when_date']) ? date('Y-m-d', strtotime($task['task_when_date'])) : '';
+
+                if (empty($task_date)) {
+                    continue;
+                }
+
+                // Check if task date is within our date range
+                if (!in_array($task_date, $dates)) {
+                    continue;
+                }
+
+                // Get task type configuration
+                $task_type_id = isset($task['task_type_id']) ? $task['task_type_id'] : '';
+                $task_type_config = isset($task_types_map[$task_type_id]) ? $task_types_map[$task_type_id] : null;
+
+                // Add task to grid
+                if (!isset($grid[$room_name][$task_date])) {
+                    $grid[$room_name][$task_date] = array();
+                }
+
+                // Store task info
+                $task_info = array(
+                    'type'        => 'task',
+                    'task_id'     => isset($task['task_id']) ? $task['task_id'] : '',
+                    'task_type_id' => $task_type_id,
+                    'description' => isset($task['task_description']) ? $task['task_description'] : '',
+                    'date'        => $task_date,
+                );
+
+                // Add task type styling if configured
+                if ($task_type_config) {
+                    $task_info['color'] = isset($task_type_config['color']) ? $task_type_config['color'] : '#9e9e9e';
+                    $task_info['icon'] = isset($task_type_config['icon']) ? $task_type_config['icon'] : 'task';
+                    $task_info['task_type_name'] = isset($task_type_config['name']) ? $task_type_config['name'] : '';
+                }
+
+                // If there's already a booking on this date, store task separately
+                if (isset($grid[$room_name][$task_date]['booking_id'])) {
+                    // Initialize tasks array if it doesn't exist
+                    if (!isset($grid[$room_name][$task_date]['tasks'])) {
+                        $grid[$room_name][$task_date]['tasks'] = array();
+                    }
+                    $grid[$room_name][$task_date]['tasks'][] = $task_info;
+                } else {
+                    // No booking on this date, task takes the cell
+                    $grid[$room_name][$task_date] = $task_info;
                 }
             }
         }
@@ -421,20 +558,28 @@ class HHTM_Frontend {
                         <?php
                         $previous_booking = null;
                         foreach ($dates as $date):
-                            $booking = isset($grid[$room][$date]) ? $grid[$room][$date] : null;
+                            $cell_data = isset($grid[$room][$date]) ? $grid[$room][$date] : null;
+
+                            // Determine cell type
+                            $is_booking = $cell_data && isset($cell_data['booking_id']);
+                            $is_task = $cell_data && isset($cell_data['type']) && $cell_data['type'] === 'task';
+                            $has_tasks = $cell_data && isset($cell_data['tasks']) && !empty($cell_data['tasks']);
 
                             // Skip if this is a continuation of the previous booking
-                            if ($previous_booking && $booking && $booking['booking_id'] === $previous_booking['booking_id']) {
+                            if ($previous_booking && $is_booking && $cell_data['booking_id'] === $previous_booking['booking_id']) {
                                 continue;
                             }
 
-                            if ($booking):
+                            if ($is_booking):
+                                // Booking cell (may have tasks overlay)
+                                $booking = $cell_data;
+
                                 // Calculate colspan
                                 $colspan = 1;
                                 $next_date = $date;
                                 for ($i = 1; $i < count($dates); $i++) {
                                     $next_date = date('Y-m-d', strtotime($date . ' + ' . $i . ' days'));
-                                    if (isset($grid[$room][$next_date]) && $grid[$room][$next_date]['booking_id'] === $booking['booking_id']) {
+                                    if (isset($grid[$room][$next_date]) && isset($grid[$room][$next_date]['booking_id']) && $grid[$room][$next_date]['booking_id'] === $booking['booking_id']) {
                                         $colspan++;
                                     } else {
                                         break;
@@ -456,6 +601,19 @@ class HHTM_Frontend {
                                 if (!empty($booking['bed_type'])) {
                                     $tooltip .= ' | ' . $booking['bed_type'];
                                 }
+
+                                // Add tasks to tooltip if present
+                                if ($has_tasks) {
+                                    $tooltip .= "\n\nTasks:";
+                                    foreach ($cell_data['tasks'] as $task) {
+                                        $task_name = isset($task['task_type_name']) ? $task['task_type_name'] : 'Task';
+                                        $task_desc = isset($task['description']) ? $task['description'] : '';
+                                        $tooltip .= "\n- " . $task_name;
+                                        if ($task_desc) {
+                                            $tooltip .= ': ' . $task_desc;
+                                        }
+                                    }
+                                }
                                 ?>
                                 <td class="hhtm-booking-cell <?php echo esc_attr($cell_class); ?>"
                                     colspan="<?php echo esc_attr($colspan); ?>"
@@ -465,11 +623,51 @@ class HHTM_Frontend {
                                         <?php if (!empty($booking['bed_type'])): ?>
                                             <span class="hhtm-bed-type"><?php echo esc_html($booking['bed_type']); ?></span>
                                         <?php endif; ?>
+                                        <?php if ($has_tasks): ?>
+                                            <div class="hhtm-task-indicators">
+                                                <?php foreach ($cell_data['tasks'] as $task): ?>
+                                                    <?php
+                                                    $task_color = isset($task['color']) ? $task['color'] : '#9e9e9e';
+                                                    $task_icon = isset($task['icon']) ? $task['icon'] : 'task';
+                                                    ?>
+                                                    <span class="hhtm-task-indicator material-icons" style="color: <?php echo esc_attr($task_color); ?>;">
+                                                        <?php echo esc_html($task_icon); ?>
+                                                    </span>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                                 <?php
                                 $previous_booking = $booking;
+                            elseif ($is_task):
+                                // Task-only cell
+                                $task = $cell_data;
+                                $task_color = isset($task['color']) ? $task['color'] : '#9e9e9e';
+                                $task_icon = isset($task['icon']) ? $task['icon'] : 'task';
+                                $task_name = isset($task['task_type_name']) ? $task['task_type_name'] : 'Task';
+                                $task_desc = isset($task['description']) ? $task['description'] : '';
+
+                                // Build tooltip
+                                $tooltip = $task_name;
+                                if ($task_desc) {
+                                    $tooltip .= "\n" . $task_desc;
+                                }
+                                ?>
+                                <td class="hhtm-booking-cell hhtm-cell-task"
+                                    style="background-color: <?php echo esc_attr($task_color); ?>33;"
+                                    title="<?php echo esc_attr($tooltip); ?>">
+                                    <div class="hhtm-task-content">
+                                        <span class="material-icons hhtm-task-icon" style="color: <?php echo esc_attr($task_color); ?>;">
+                                            <?php echo esc_html($task_icon); ?>
+                                        </span>
+                                        <span class="hhtm-task-name"><?php echo esc_html($task_name); ?></span>
+                                    </div>
+                                </td>
+                                <?php
+                                $previous_booking = null;
                             else:
+                                // Vacant cell
                                 ?>
                                 <td class="hhtm-booking-cell hhtm-cell-vacant" title="Vacant"></td>
                                 <?php
