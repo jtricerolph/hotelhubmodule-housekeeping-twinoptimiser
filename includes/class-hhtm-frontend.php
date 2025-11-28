@@ -781,14 +781,18 @@ class HHTM_Frontend {
                     // Render category header if category changed
                     if ($current_category !== $room_category):
                         $current_category = $room_category;
+                        $category_id = sanitize_title($room_category);
                         ?>
-                        <tr class="hhtm-category-header">
+                        <tr class="hhtm-category-header" data-category="<?php echo esc_attr($category_id); ?>">
                             <td colspan="<?php echo esc_attr($column_count); ?>">
-                                <strong><?php echo esc_html($room_category); ?></strong>
+                                <div class="hhtm-category-name">
+                                    <span class="material-symbols-outlined hhtm-category-toggle">expand_more</span>
+                                    <strong><?php echo esc_html($room_category); ?></strong>
+                                </div>
                             </td>
                         </tr>
                     <?php endif; ?>
-                    <tr>
+                    <tr class="hhtm-room-row" data-category="<?php echo esc_attr(isset($category_id) ? $category_id : sanitize_title($room_category)); ?>">
                         <td class="hhtm-room-cell"><?php echo esc_html(isset($grid[$room]['site_name']) ? $grid[$room]['site_name'] : $room); ?></td>
                         <?php
                         $previous_booking = null;

@@ -31,6 +31,9 @@
         // Initialize twin detection modal handlers
         initTwinModal();
 
+        // Initialize category collapse handlers
+        initCategoryCollapse();
+
         // Initialize global key handlers
         initGlobalKeyHandlers();
 
@@ -170,6 +173,63 @@
         });
 
         // NOTE: ESC key handler is shared - see bottom of file
+    }
+
+    /**
+     * Initialize category collapse/expand functionality
+     */
+    function initCategoryCollapse() {
+        // Restore collapsed state from sessionStorage
+        restoreCollapsedState();
+
+        // Delegate click event for category headers
+        $(document).on('click', '.hhtm-category-header', function(e) {
+            const $header = $(this);
+            const categoryId = $header.data('category');
+
+            // Toggle collapsed class
+            $header.toggleClass('collapsed');
+
+            // Toggle visibility of room rows for this category
+            $('.hhtm-room-row[data-category="' + categoryId + '"]').toggle();
+
+            // Save collapsed state
+            saveCollapsedState();
+        });
+    }
+
+    /**
+     * Save collapsed categories to sessionStorage
+     */
+    function saveCollapsedState() {
+        const collapsed = [];
+        $('.hhtm-category-header.collapsed').each(function() {
+            collapsed.push($(this).data('category'));
+        });
+        sessionStorage.setItem('hhtm_collapsed_categories', JSON.stringify(collapsed));
+    }
+
+    /**
+     * Restore collapsed state from sessionStorage
+     */
+    function restoreCollapsedState() {
+        const stored = sessionStorage.getItem('hhtm_collapsed_categories');
+        if (!stored) {
+            return;
+        }
+
+        try {
+            const collapsed = JSON.parse(stored);
+            collapsed.forEach(function(categoryId) {
+                const $header = $('.hhtm-category-header[data-category="' + categoryId + '"]');
+                if ($header.length) {
+                    $header.addClass('collapsed');
+                    $('.hhtm-room-row[data-category="' + categoryId + '"]').hide();
+                }
+            });
+        } catch (e) {
+            console.error('Failed to restore collapsed state:', e);
+        }
     }
 
     /**

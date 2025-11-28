@@ -80,7 +80,7 @@
     font-size: 9px;
     position: sticky;
     left: 0;
-    top: 50px;
+    top: 0;
     z-index: 20;
     background: #2c3e50;
 }
@@ -94,7 +94,7 @@
     width: 29px;
     min-width: 29px;
     position: sticky;
-    top: 50px;
+    top: 0;
     z-index: 15;
     background: #2c3e50;
 }
@@ -462,10 +462,16 @@
 /* Category Headers */
 .hhtm-category-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    user-select: none;
+}
+
+.hhtm-category-header:hover {
+    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-header td {
-    padding: 10px 12px;
+    padding: 4px 12px;
     color: #fff;
     font-weight: 700;
     font-size: 11px;
@@ -473,10 +479,27 @@
     letter-spacing: 0.5px;
     border-top: 2px solid #fff;
     border-bottom: 2px solid #fff;
+    position: relative;
 }
 
 .hhtm-category-header:first-child td {
     border-top: none;
+}
+
+.hhtm-category-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hhtm-category-toggle {
+    font-size: 18px;
+    transition: transform 0.2s;
+    line-height: 1;
+}
+
+.hhtm-category-header.collapsed .hhtm-category-toggle {
+    transform: rotate(-90deg);
 }
 
 /* Task Detail Modal */
