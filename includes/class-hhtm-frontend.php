@@ -182,7 +182,7 @@ class HHTM_Frontend {
             $dates[] = date('Y-m-d', strtotime($start_date . ' + ' . $i . ' days'));
         }
 
-        // Build site-to-category map and exclusion list
+        // Build site-to-category map and exclusion list (using IDs for matching)
         $site_to_category = array();
         $excluded_sites = array();
         $excluded_categories = array();
@@ -190,22 +190,33 @@ class HHTM_Frontend {
 
         if (!empty($categories_sort)) {
             foreach ($categories_sort as $cat_index => $category) {
+                $category_id = isset($category['id']) ? $category['id'] : null;
+                $category_name = isset($category['name']) ? $category['name'] : '';
+
                 if (!empty($category['excluded'])) {
-                    $excluded_categories[] = $category['name'];
+                    if ($category_id) {
+                        $excluded_categories[] = $category_id;
+                    }
                     continue;
                 }
 
                 if (isset($category['sites'])) {
                     foreach ($category['sites'] as $site_index => $site) {
-                        $site_name = $site['site_name'];
-                        $site_to_category[$site_name] = $category['name'];
-                        $site_order_map[$site_name] = array(
-                            'category_order' => $cat_index,
-                            'site_order'     => $site_index,
-                        );
+                        $site_id = isset($site['site_id']) ? $site['site_id'] : '';
 
-                        if (!empty($site['excluded'])) {
-                            $excluded_sites[] = $site_name;
+                        if ($site_id) {
+                            $site_to_category[$site_id] = array(
+                                'category_id'   => $category_id,
+                                'category_name' => $category_name,
+                            );
+                            $site_order_map[$site_id] = array(
+                                'category_order' => $cat_index,
+                                'site_order'     => $site_index,
+                            );
+
+                            if (!empty($site['excluded'])) {
+                                $excluded_sites[] = $site_id;
+                            }
                         }
                     }
                 }
@@ -216,26 +227,37 @@ class HHTM_Frontend {
         foreach ($bookings as $booking) {
             // NewBook API uses 'site_name' for room name
             $room_name = isset($booking['site_name']) ? $booking['site_name'] : '';
+            $room_site_id = isset($booking['site_id']) ? $booking['site_id'] : '';
 
             // Skip bookings without room assignment
             if (empty($room_name)) {
                 continue;
             }
 
-            // Skip excluded sites
-            if (in_array($room_name, $excluded_sites)) {
+            // Skip excluded sites (using site_id for matching)
+            if ($room_site_id && in_array($room_site_id, $excluded_sites)) {
                 continue;
             }
 
-            // Skip sites from excluded categories
-            if (isset($site_to_category[$room_name]) && in_array($site_to_category[$room_name], $excluded_categories)) {
-                continue;
+            // Skip sites from excluded categories (using site_id and category_id for matching)
+            if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                $site_category_id = $site_to_category[$room_site_id]['category_id'];
+                if (in_array($site_category_id, $excluded_categories)) {
+                    continue;
+                }
             }
 
             // Initialize room if not exists
             if (!isset($grid[$room_name])) {
+                // Determine category name (use configured category if site_id matches, otherwise Uncategorized)
+                $category_name = 'Uncategorized';
+                if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                    $category_name = $site_to_category[$room_site_id]['category_name'];
+                }
+
                 $grid[$room_name] = array(
-                    'category' => isset($site_to_category[$room_name]) ? $site_to_category[$room_name] : 'Uncategorized',
+                    'category' => $category_name,
+                    'site_id'  => $room_site_id,
                 );
                 $rooms[] = $room_name;
             }
@@ -265,11 +287,16 @@ class HHTM_Frontend {
             }
         }
 
-        // Sort rooms by category and site order
+        // Sort rooms by category and site order (using site_id for matching)
         if (!empty($site_order_map)) {
-            usort($rooms, function($a, $b) use ($site_order_map) {
-                $a_order = isset($site_order_map[$a]) ? $site_order_map[$a] : array('category_order' => 9999, 'site_order' => 9999);
-                $b_order = isset($site_order_map[$b]) ? $site_order_map[$b] : array('category_order' => 9999, 'site_order' => 9999);
+            usort($rooms, function($a, $b) use ($site_order_map, $grid) {
+                // Get site_id for each room
+                $a_site_id = isset($grid[$a]['site_id']) ? $grid[$a]['site_id'] : '';
+                $b_site_id = isset($grid[$b]['site_id']) ? $grid[$b]['site_id'] : '';
+
+                // Get order based on site_id
+                $a_order = ($a_site_id && isset($site_order_map[$a_site_id])) ? $site_order_map[$a_site_id] : array('category_order' => 9999, 'site_order' => 9999);
+                $b_order = ($b_site_id && isset($site_order_map[$b_site_id])) ? $site_order_map[$b_site_id] : array('category_order' => 9999, 'site_order' => 9999);
 
                 // First sort by category order
                 if ($a_order['category_order'] !== $b_order['category_order']) {
