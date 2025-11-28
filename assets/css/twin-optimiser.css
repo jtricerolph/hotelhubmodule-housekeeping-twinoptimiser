@@ -228,7 +228,7 @@
 }
 
 .hhtm-task-icon {
-    font-size: 18px;
+    font-size: 14px;
     line-height: 1;
     opacity: 1;
 }
@@ -386,7 +386,7 @@
 
     /* Task elements on landscape/tablets */
     .hhtm-task-icon {
-        font-size: 20px;
+        font-size: 15px;
     }
 
     .hhtm-task-indicator {
@@ -434,7 +434,7 @@
 
     /* Task elements on desktop */
     .hhtm-task-icon {
-        font-size: 22px;
+        font-size: 16px;
     }
 
     .hhtm-task-indicator {
