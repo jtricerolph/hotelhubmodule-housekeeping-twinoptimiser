@@ -783,9 +783,10 @@ class HHTM_Frontend {
                         $current_category = $room_category;
                         ?>
                         <tr class="hhtm-category-header">
-                            <td colspan="<?php echo esc_attr($column_count); ?>">
+                            <td class="hhtm-category-name">
                                 <strong><?php echo esc_html($room_category); ?></strong>
                             </td>
+                            <td class="hhtm-category-spacer" colspan="<?php echo esc_attr($column_count - 1); ?>"></td>
                         </tr>
                     <?php endif; ?>
                     <tr>

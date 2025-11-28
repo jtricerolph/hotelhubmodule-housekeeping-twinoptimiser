@@ -80,7 +80,7 @@
     font-size: 9px;
     position: sticky;
     left: 0;
-    top: 0;
+    top: 60px;
     z-index: 20;
     background: #2c3e50;
 }
@@ -89,12 +89,12 @@
     text-align: center;
     padding: 3px 1px;
     font-weight: 600;
-    font-size: 7px;
+    font-size: 9px;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     width: 29px;
     min-width: 29px;
     position: sticky;
-    top: 0;
+    top: 60px;
     z-index: 15;
     background: #2c3e50;
 }
@@ -107,13 +107,13 @@
 }
 
 .hhtm-day {
-    font-size: 6px;
+    font-size: 7px;
     text-transform: uppercase;
     opacity: 0.8;
 }
 
 .hhtm-date {
-    font-size: 7px;
+    font-size: 9px;
     font-weight: 700;
 }
 
@@ -350,7 +350,7 @@
     .hhtm-date-header {
         width: 31px;
         min-width: 31px;
-        font-size: 7px;
+        font-size: 8px;
     }
 
     .hhtm-booking-cell {
@@ -384,7 +384,7 @@
     .hhtm-date-header {
         width: 34px;
         min-width: 34px;
-        font-size: 8px;
+        font-size: 10px;
     }
 
     .hhtm-booking-grid {
@@ -432,7 +432,7 @@
         width: 38px;
         min-width: 38px;
         padding: 5px 2px;
-        font-size: 9px;
+        font-size: 11px;
     }
 
     .hhtm-booking-grid {
@@ -462,12 +462,9 @@
 /* Category Headers */
 .hhtm-category-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    position: sticky;
-    top: 35px;
-    z-index: 10;
 }
 
-.hhtm-category-header td {
+.hhtm-category-name {
     padding: 10px 12px;
     color: #fff;
     font-weight: 700;
@@ -478,11 +475,20 @@
     border-bottom: 2px solid #fff;
     position: sticky;
     left: 0;
+    top: 95px;
     z-index: 12;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.hhtm-category-header:first-child td {
+.hhtm-category-spacer {
+    padding: 10px 0;
+    border-top: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hhtm-category-header:first-child .hhtm-category-name,
+.hhtm-category-header:first-child .hhtm-category-spacer {
     border-top: none;
 }
 
