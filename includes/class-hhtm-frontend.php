@@ -24,6 +24,9 @@ class HHTM_Frontend {
      * Render module content.
      */
     public function render_module_content() {
+        // Enqueue styles and scripts inline for AJAX-loaded modules
+        $this->enqueue_inline_assets();
+
         // Get current hotel
         $hotel_id = hha()->auth->get_current_hotel_id();
 
@@ -892,6 +895,28 @@ class HHTM_Frontend {
         $html = ob_get_clean();
 
         wp_send_json_success(array('html' => $html));
+    }
+
+    /**
+     * Enqueue assets inline for AJAX-loaded modules.
+     */
+    private function enqueue_inline_assets() {
+        // Output Material Icons stylesheet
+        echo '<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">';
+
+        // Output module CSS
+        echo '<link rel="stylesheet" href="' . esc_url(HHTM_PLUGIN_URL . 'assets/css/twin-optimiser.css?ver=' . HHTM_VERSION) . '">';
+
+        // Output module JavaScript
+        ?>
+        <script>
+            var hhtmData = {
+                ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>',
+                nonce: '<?php echo esc_js(wp_create_nonce('hhtm-twin-optimiser')); ?>'
+            };
+        </script>
+        <script src="<?php echo esc_url(HHTM_PLUGIN_URL . 'assets/js/twin-optimiser.js?ver=' . HHTM_VERSION); ?>"></script>
+        <?php
     }
 
     /**

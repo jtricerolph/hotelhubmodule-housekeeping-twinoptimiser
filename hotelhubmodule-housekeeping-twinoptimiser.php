@@ -3,7 +3,7 @@
  * Plugin Name: Hotel Hub Module - Housekeeping - Twin Optimiser
  * Plugin URI: https://github.com/yourusername/hotelhubmodule-housekeeping-twinoptomiser
  * Description: Twin room optimisation module for Hotel Hub App - displays booking grid to identify twin opportunities
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Your Name
  * Author URI: https://yourwebsite.com
  * License: GPL v2 or later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('HHTM_VERSION', '1.2.0');
+define('HHTM_VERSION', '1.2.1');
 define('HHTM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('HHTM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('HHTM_PLUGIN_BASENAME', plugin_basename(__FILE__));
