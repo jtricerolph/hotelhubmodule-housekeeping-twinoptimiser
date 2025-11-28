@@ -494,6 +494,11 @@
     position: sticky;
     left: 0;
     z-index: 10;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hhtm-category-header:hover .hhtm-category-name {
+    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-toggle {
