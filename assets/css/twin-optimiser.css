@@ -191,27 +191,32 @@
 /* Task Content - Styled as rounded block */
 .hhtm-task-content {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
     height: 100%;
     border-radius: 6px;
     border: 2px solid;
-    padding: 2px 6px;
+    padding: 3px 4px;
 }
 
 .hhtm-task-icon {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1;
-    opacity: 0.9;
+    opacity: 1;
 }
 
 .hhtm-task-name {
-    display: none; /* Hidden in mobile compact view */
-    font-size: 8px;
+    display: block; /* Always show task description */
+    font-size: 9px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 500;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Task Indicators on Booking Cells */
@@ -358,7 +363,11 @@
 
     /* Task elements on landscape/tablets */
     .hhtm-task-icon {
-        font-size: 18px;
+        font-size: 16px;
+    }
+
+    .hhtm-task-name {
+        font-size: 10px;
     }
 
     .hhtm-task-indicator {
@@ -400,14 +409,13 @@
         padding: 4px;
     }
 
-    /* Task elements on desktop - show names */
+    /* Task elements on desktop */
     .hhtm-task-icon {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .hhtm-task-name {
-        display: block;
-        font-size: 9px;
+        font-size: 11px;
     }
 
     .hhtm-task-indicator {

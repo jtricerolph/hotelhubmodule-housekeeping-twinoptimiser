@@ -696,20 +696,17 @@ class HHTM_Frontend {
                                 $task_name = isset($task['task_type_name']) ? $task['task_type_name'] : 'Task';
                                 $task_desc = isset($task['description']) ? $task['description'] : '';
 
-                                // Build tooltip
-                                $tooltip = $task_name;
-                                if ($task_desc) {
-                                    $tooltip .= "\n" . $task_desc;
-                                }
+                                // Display description if available, otherwise task type name
+                                $task_display = $task_desc ? $task_desc : $task_name;
                                 ?>
                                 <td class="hhtm-booking-cell hhtm-cell-task"
                                     colspan="<?php echo esc_attr($colspan); ?>"
-                                    title="<?php echo esc_attr($tooltip); ?>">
+                                    title="<?php echo esc_attr($task_name); ?>">
                                     <div class="hhtm-task-content" style="background-color: <?php echo esc_attr($task_color); ?>; border-color: <?php echo esc_attr($task_color); ?>;">
                                         <span class="material-icons hhtm-task-icon" style="color: #fff;">
                                             <?php echo esc_html($task_icon); ?>
                                         </span>
-                                        <span class="hhtm-task-name" style="color: #fff;"><?php echo esc_html($task_name); ?></span>
+                                        <span class="hhtm-task-name" style="color: #fff;"><?php echo esc_html($task_display); ?></span>
                                     </div>
                                 </td>
                                 <?php
