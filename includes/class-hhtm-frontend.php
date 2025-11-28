@@ -585,6 +585,7 @@ class HHTM_Frontend {
                         <td class="hhtm-room-cell"><?php echo esc_html(isset($grid[$room]['site_name']) ? $grid[$room]['site_name'] : $room); ?></td>
                         <?php
                         $previous_booking = null;
+                        $previous_task = null;
                         foreach ($dates as $date):
                             $cell_data = isset($grid[$room][$date]) ? $grid[$room][$date] : null;
 
@@ -595,6 +596,11 @@ class HHTM_Frontend {
 
                             // Skip if this is a continuation of the previous booking
                             if ($previous_booking && $is_booking && $cell_data['booking_id'] === $previous_booking['booking_id']) {
+                                continue;
+                            }
+
+                            // Skip if this is a continuation of the previous task
+                            if ($previous_task && $is_task && $cell_data['task_id'] === $previous_task['task_id']) {
                                 continue;
                             }
 
@@ -668,9 +674,23 @@ class HHTM_Frontend {
                                 </td>
                                 <?php
                                 $previous_booking = $booking;
+                                $previous_task = null;
                             elseif ($is_task):
                                 // Task-only cell
                                 $task = $cell_data;
+
+                                // Calculate colspan for task
+                                $colspan = 1;
+                                $next_date = $date;
+                                for ($i = 1; $i < count($dates); $i++) {
+                                    $next_date = date('Y-m-d', strtotime($date . ' + ' . $i . ' days'));
+                                    if (isset($grid[$room][$next_date]) && isset($grid[$room][$next_date]['task_id']) && $grid[$room][$next_date]['task_id'] === $task['task_id']) {
+                                        $colspan++;
+                                    } else {
+                                        break;
+                                    }
+                                }
+
                                 $task_color = isset($task['color']) ? $task['color'] : '#9e9e9e';
                                 $task_icon = isset($task['icon']) ? $task['icon'] : 'task';
                                 $task_name = isset($task['task_type_name']) ? $task['task_type_name'] : 'Task';
@@ -683,6 +703,7 @@ class HHTM_Frontend {
                                 }
                                 ?>
                                 <td class="hhtm-booking-cell hhtm-cell-task"
+                                    colspan="<?php echo esc_attr($colspan); ?>"
                                     style="background-color: <?php echo esc_attr($task_color); ?>33;"
                                     title="<?php echo esc_attr($tooltip); ?>">
                                     <div class="hhtm-task-content">
@@ -694,12 +715,14 @@ class HHTM_Frontend {
                                 </td>
                                 <?php
                                 $previous_booking = null;
+                                $previous_task = $task;
                             else:
                                 // Vacant cell
                                 ?>
                                 <td class="hhtm-booking-cell hhtm-cell-vacant" title="Vacant"></td>
                                 <?php
                                 $previous_booking = null;
+                                $previous_task = null;
                             endif;
                         endforeach;
                         ?>
