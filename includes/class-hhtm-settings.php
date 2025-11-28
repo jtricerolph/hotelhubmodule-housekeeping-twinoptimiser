@@ -76,6 +76,7 @@ class HHTM_Settings {
                                 $notes_search_terms = isset($location_settings[$location_id]['notes_search_terms']) ? $location_settings[$location_id]['notes_search_terms'] : '';
                                 $normal_booking_color = isset($location_settings[$location_id]['normal_booking_color']) ? $location_settings[$location_id]['normal_booking_color'] : '#ce93d8';
                                 $twin_booking_color = isset($location_settings[$location_id]['twin_booking_color']) ? $location_settings[$location_id]['twin_booking_color'] : '#81c784';
+                                $potential_twin_color = isset($location_settings[$location_id]['potential_twin_color']) ? $location_settings[$location_id]['potential_twin_color'] : '#FFB74D';
                                 ?>
                                 <tr>
                                     <td style="text-align: center;">
@@ -112,6 +113,16 @@ class HHTM_Settings {
                                                         class="hhtm-color-picker"
                                                     >
                                                     <span class="hhtm-color-value"><?php echo esc_html($twin_booking_color); ?></span>
+                                                </div>
+                                                <div class="hhtm-color-field">
+                                                    <label><?php _e('Potential Twin Color:', 'hhtm'); ?></label>
+                                                    <input
+                                                        type="color"
+                                                        name="hhtm_location_settings[<?php echo esc_attr($location_id); ?>][potential_twin_color]"
+                                                        value="<?php echo esc_attr($potential_twin_color); ?>"
+                                                        class="hhtm-color-picker"
+                                                    >
+                                                    <span class="hhtm-color-value"><?php echo esc_html($potential_twin_color); ?></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -184,13 +195,21 @@ class HHTM_Settings {
 
                 <div class="hhtm-settings-info">
                     <h2><?php _e('How Twin Detection Works', 'hhtm'); ?></h2>
-                    <p><?php _e('The Twin Optimiser uses multiple methods to identify twin room opportunities:', 'hhtm'); ?></p>
+                    <p><?php _e('The Twin Optimiser uses a three-tier color system to identify and highlight twin room opportunities:', 'hhtm'); ?></p>
+
+                    <h3><?php _e('Color Meanings', 'hhtm'); ?></h3>
                     <ul>
-                        <li><strong><?php _e('Custom Fields:', 'hhtm'); ?></strong> <?php _e('Checks specified custom field names for any of the configured values (partial, case-insensitive match)', 'hhtm'); ?></li>
-                        <li><strong><?php _e('Booking Notes:', 'hhtm'); ?></strong> <?php _e('Searches all booking note content for configured search terms (partial, case-insensitive match)', 'hhtm'); ?></li>
-                        <li><strong><?php _e('Legacy Detection:', 'hhtm'); ?></strong> <?php _e('Falls back to checking the legacy custom field for "twin", "2 x single", or "2x single" if enhanced detection is not configured', 'hhtm'); ?></li>
+                        <li><strong><?php _e('Normal Booking Color:', 'hhtm'); ?></strong> <?php _e('Standard bookings that are not identified as twins', 'hhtm'); ?></li>
+                        <li><strong><?php _e('Twin Booking Color:', 'hhtm'); ?></strong> <?php _e('Confirmed twin bookings where custom fields match the configured twin values', 'hhtm'); ?></li>
+                        <li><strong><?php _e('Potential Twin Color:', 'hhtm'); ?></strong> <?php _e('Bookings where notes suggest a twin requirement but custom fields don\'t confirm it - these may need manual review', 'hhtm'); ?></li>
                     </ul>
-                    <p><?php _e('Twin bookings are highlighted using your configured color in the booking grid. Normal bookings use the normal booking color.', 'hhtm'); ?></p>
+
+                    <h3><?php _e('Detection Methods', 'hhtm'); ?></h3>
+                    <ul>
+                        <li><strong><?php _e('Custom Fields (Confirmed Twins):', 'hhtm'); ?></strong> <?php _e('Checks specified custom field names for any of the configured values (partial, case-insensitive match)', 'hhtm'); ?></li>
+                        <li><strong><?php _e('Booking Notes (Potential Twins):', 'hhtm'); ?></strong> <?php _e('Searches all booking note content for configured search terms (partial, case-insensitive match) - only triggers potential twin color if custom fields don\'t confirm', 'hhtm'); ?></li>
+                        <li><strong><?php _e('Legacy Detection (Confirmed Twins):', 'hhtm'); ?></strong> <?php _e('Falls back to checking the legacy custom field for "twin", "2 x single", or "2x single" if enhanced detection is not configured', 'hhtm'); ?></li>
+                    </ul>
                 </div>
             <?php endif; ?>
         </div>
@@ -317,6 +336,7 @@ class HHTM_Settings {
                 'notes_search_terms'   => sanitize_text_field($settings['notes_search_terms']),
                 'normal_booking_color' => sanitize_hex_color($settings['normal_booking_color']),
                 'twin_booking_color'   => sanitize_hex_color($settings['twin_booking_color']),
+                'potential_twin_color' => sanitize_hex_color($settings['potential_twin_color']),
             );
         }
 
@@ -419,6 +439,7 @@ class HHTM_Settings {
             'notes_search_terms'   => '',
             'normal_booking_color' => '#ce93d8',
             'twin_booking_color'   => '#81c784',
+            'potential_twin_color' => '#FFB74D',
         );
     }
 
@@ -442,5 +463,16 @@ class HHTM_Settings {
     public static function get_twin_booking_color($location_id) {
         $settings = self::get_location_settings($location_id);
         return $settings['twin_booking_color'];
+    }
+
+    /**
+     * Get potential twin booking color for a location.
+     *
+     * @param int $location_id Workforce location ID.
+     * @return string Hex color code.
+     */
+    public static function get_potential_twin_color($location_id) {
+        $settings = self::get_location_settings($location_id);
+        return $settings['potential_twin_color'];
     }
 }

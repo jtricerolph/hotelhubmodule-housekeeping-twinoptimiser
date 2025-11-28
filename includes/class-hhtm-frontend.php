@@ -202,6 +202,7 @@ class HHTM_Frontend {
         // Get location colors
         $normal_color = HHTM_Settings::get_normal_booking_color($hotel->location_id);
         $twin_color = HHTM_Settings::get_twin_booking_color($hotel->location_id);
+        $potential_twin_color = HHTM_Settings::get_potential_twin_color($hotel->location_id);
 
         // Inject custom CSS for colors
         ?>
@@ -213,6 +214,10 @@ class HHTM_Frontend {
             .hhtm-cell-twin .hhtm-booking-content {
                 background: <?php echo esc_attr($twin_color); ?> !important;
                 border-color: <?php echo esc_attr($this->adjust_color_brightness($twin_color, -20)); ?> !important;
+            }
+            .hhtm-cell-potential-twin .hhtm-booking-content {
+                background: <?php echo esc_attr($potential_twin_color); ?> !important;
+                border-color: <?php echo esc_attr($this->adjust_color_brightness($potential_twin_color, -20)); ?> !important;
             }
         </style>
         <?php
@@ -337,19 +342,19 @@ class HHTM_Frontend {
 
             // Get location settings for enhanced detection
             $location_settings = HHTM_Settings::get_location_settings($hotel->location_id);
-            $is_twin = $this->is_twin_booking($booking, $bed_type, $location_settings);
+            $booking_type = $this->is_twin_booking($booking, $bed_type, $location_settings);
 
             // Fill in grid for booking dates
             foreach ($dates as $date) {
                 if ($date >= $checkin && $date < $checkout) {
                     if (!isset($grid[$grid_key][$date])) {
                         $grid[$grid_key][$date] = array(
-                            'booking_id'  => $booking['booking_id'],
-                            'booking_ref' => $booking['booking_reference_id'],
-                            'bed_type'    => $bed_type,
-                            'is_twin'     => $is_twin,
-                            'checkin'     => $checkin,
-                            'checkout'    => $checkout,
+                            'booking_id'   => $booking['booking_id'],
+                            'booking_ref'  => $booking['booking_reference_id'],
+                            'bed_type'     => $bed_type,
+                            'booking_type' => $booking_type,
+                            'checkin'      => $checkin,
+                            'checkout'     => $checkout,
                         );
                     }
                 }
@@ -558,7 +563,7 @@ class HHTM_Frontend {
      * @param array  $booking          Full booking data.
      * @param string $bed_type         Bed type value from legacy field.
      * @param array  $location_settings Location settings with detection rules.
-     * @return bool True if twin, false otherwise.
+     * @return string Detection type: 'twin' (confirmed), 'potential_twin', or 'normal'.
      */
     private function is_twin_booking($booking, $bed_type, $location_settings) {
         // Enhanced custom field detection
@@ -567,7 +572,7 @@ class HHTM_Frontend {
         $custom_field_values = !empty($location_settings['custom_field_values']) ?
             array_map('trim', explode(',', $location_settings['custom_field_values'])) : array();
 
-        // Check configured custom fields
+        // Check configured custom fields - this is PRIMARY/CONFIRMED detection
         if (!empty($custom_field_names) && !empty($custom_field_values)) {
             foreach ($custom_field_names as $field_name) {
                 if (empty($field_name)) {
@@ -596,14 +601,28 @@ class HHTM_Frontend {
 
                         $search_value_lower = strtolower($search_value);
                         if (strpos($field_value_lower, $search_value_lower) !== false) {
-                            return true;
+                            return 'twin'; // Confirmed twin via custom fields
                         }
                     }
                 }
             }
         }
 
-        // Enhanced notes search
+        // Legacy detection (fallback for confirmed twin)
+        if (!empty($bed_type)) {
+            $bed_type_lower = strtolower($bed_type);
+
+            // Check for twin indicators
+            if (strpos($bed_type_lower, 'twin') !== false) {
+                return 'twin'; // Confirmed twin via legacy field
+            }
+
+            if (preg_match('/2\s*x?\s*single/i', $bed_type_lower)) {
+                return 'twin'; // Confirmed twin via legacy field
+            }
+        }
+
+        // Enhanced notes search - this is POTENTIAL detection (not confirmed)
         $notes_search_terms = !empty($location_settings['notes_search_terms']) ?
             array_map('trim', explode(',', $location_settings['notes_search_terms'])) : array();
 
@@ -625,28 +644,14 @@ class HHTM_Frontend {
 
                         $search_term_lower = strtolower($search_term);
                         if (strpos($note_content_lower, $search_term_lower) !== false) {
-                            return true;
+                            return 'potential_twin'; // Potential twin - notes suggest but fields don't confirm
                         }
                     }
                 }
             }
         }
 
-        // Legacy detection (fallback)
-        if (!empty($bed_type)) {
-            $bed_type_lower = strtolower($bed_type);
-
-            // Check for twin indicators
-            if (strpos($bed_type_lower, 'twin') !== false) {
-                return true;
-            }
-
-            if (preg_match('/2\s*x?\s*single/i', $bed_type_lower)) {
-                return true;
-            }
-        }
-
-        return false;
+        return 'normal';
     }
 
     /**
@@ -735,9 +740,14 @@ class HHTM_Frontend {
                                     }
                                 }
 
-                                $cell_class = 'hhtm-cell-booked';
-                                if ($booking['is_twin']) {
+                                // Determine cell class based on booking type
+                                $booking_type = isset($booking['booking_type']) ? $booking['booking_type'] : 'normal';
+                                if ($booking_type === 'twin') {
                                     $cell_class = 'hhtm-cell-twin';
+                                } elseif ($booking_type === 'potential_twin') {
+                                    $cell_class = 'hhtm-cell-potential-twin';
+                                } else {
+                                    $cell_class = 'hhtm-cell-booked';
                                 }
 
                                 // Build tooltip text

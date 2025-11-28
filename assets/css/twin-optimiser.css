@@ -172,6 +172,11 @@
     /* Background and border colors are injected dynamically */
 }
 
+/* Potential Twin Cell - Colors applied via inline styles from settings */
+.hhtm-cell-potential-twin .hhtm-booking-content {
+    /* Background and border colors are injected dynamically */
+}
+
 .hhtm-booking-ref {
     display: none;
 }
@@ -233,6 +238,7 @@
 /* Hover Effects - Apply to inner blocks */
 .hhtm-cell-booked:hover .hhtm-booking-content,
 .hhtm-cell-twin:hover .hhtm-booking-content,
+.hhtm-cell-potential-twin:hover .hhtm-booking-content,
 .hhtm-cell-task:hover .hhtm-task-content {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     transform: translateY(-1px);
