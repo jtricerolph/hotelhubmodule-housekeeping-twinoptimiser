@@ -494,6 +494,7 @@
     position: sticky;
     left: 0;
     z-index: 10;
+    width: fit-content;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
