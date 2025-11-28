@@ -463,10 +463,15 @@
 .hhtm-category-header {
     cursor: pointer;
     user-select: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hhtm-category-header:hover {
+    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-header td {
-    padding: 4px 12px;
+    padding: 0;
     color: #fff;
     font-weight: 700;
     font-size: 11px;
@@ -474,14 +479,7 @@
     letter-spacing: 0.5px;
     border-top: 2px solid #fff;
     border-bottom: 2px solid #fff;
-    position: sticky;
-    left: 0;
-    z-index: 10;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.hhtm-category-header:hover td {
-    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
+    position: relative;
 }
 
 .hhtm-category-header:first-child td {
@@ -492,6 +490,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 4px 12px;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: fit-content;
+}
+
+.hhtm-category-header:hover .hhtm-category-name {
+    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-toggle {
