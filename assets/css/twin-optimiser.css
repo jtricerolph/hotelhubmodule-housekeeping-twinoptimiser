@@ -86,29 +86,29 @@
 
 .hhtm-date-header {
     text-align: center;
-    padding: 4px 1px;
+    padding: 3px 1px;
     font-weight: 600;
-    font-size: 8px;
+    font-size: 7px;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
-    width: 28px;
-    min-width: 28px;
+    width: 24px;
+    min-width: 24px;
 }
 
 .hhtm-date-label {
     display: flex;
     flex-direction: column;
     gap: 0px;
-    line-height: 1.1;
+    line-height: 1;
 }
 
 .hhtm-day {
-    font-size: 7px;
+    font-size: 6px;
     text-transform: uppercase;
     opacity: 0.8;
 }
 
 .hhtm-date {
-    font-size: 9px;
+    font-size: 7px;
     font-weight: 700;
 }
 
@@ -281,9 +281,9 @@
     }
 
     .hhtm-date-header {
-        width: 32px;
-        min-width: 32px;
-        font-size: 9px;
+        width: 28px;
+        min-width: 28px;
+        font-size: 8px;
     }
 
     .hhtm-booking-grid {
@@ -314,10 +314,10 @@
     }
 
     .hhtm-date-header {
-        width: 36px;
-        min-width: 36px;
-        padding: 6px 2px;
-        font-size: 10px;
+        width: 32px;
+        min-width: 32px;
+        padding: 5px 2px;
+        font-size: 9px;
     }
 
     .hhtm-booking-grid {
