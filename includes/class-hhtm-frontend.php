@@ -138,7 +138,9 @@ class HHTM_Frontend {
                 return $type['id'];
             }, $task_types);
 
-            $tasks_response = $api->get_tasks($period_from, $period_to, $task_type_ids, true);
+            // Fetch all tasks (completed and uncompleted) with fresh data
+            // Parameters: period_from, period_to, task_type_ids, show_uncomplete=false, created_when=null, force_refresh=true
+            $tasks_response = $api->get_tasks($period_from, $period_to, $task_type_ids, false, null, true);
 
             if ($tasks_response['success']) {
                 $tasks = isset($tasks_response['data']) ? $tasks_response['data'] : array();
