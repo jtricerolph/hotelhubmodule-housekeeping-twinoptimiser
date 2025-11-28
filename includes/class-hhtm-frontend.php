@@ -86,6 +86,27 @@ class HHTM_Frontend {
                 </div>
             </div>
         </div>
+
+        <!-- Task Detail Modal -->
+        <div id="hhtm-task-modal" class="hhtm-modal-overlay">
+            <div class="hhtm-modal">
+                <div class="hhtm-modal-header">
+                    <div class="hhtm-modal-title">
+                        <div class="hhtm-modal-icon" id="hhtm-modal-icon-wrapper">
+                            <span class="material-icons" id="hhtm-modal-icon"></span>
+                        </div>
+                        <span id="hhtm-modal-task-type"></span>
+                    </div>
+                    <button class="hhtm-modal-close" id="hhtm-modal-close">&times;</button>
+                </div>
+                <div class="hhtm-modal-body">
+                    <div class="hhtm-modal-section">
+                        <div class="hhtm-modal-label">Description</div>
+                        <div class="hhtm-modal-value" id="hhtm-modal-description"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php
     }
 
@@ -789,18 +810,18 @@ class HHTM_Frontend {
                                 $task_icon = isset($task['icon']) ? $task['icon'] : 'task';
                                 $task_name = isset($task['task_type_name']) ? $task['task_type_name'] : 'Task';
                                 $task_desc = isset($task['description']) ? $task['description'] : '';
-
-                                // Display description if available, otherwise task type name
-                                $task_display = $task_desc ? $task_desc : $task_name;
                                 ?>
                                 <td class="hhtm-booking-cell hhtm-cell-task"
-                                    colspan="<?php echo esc_attr($colspan); ?>"
-                                    title="<?php echo esc_attr($task_name); ?>">
-                                    <div class="hhtm-task-content" style="background-color: <?php echo esc_attr($task_color); ?>; border-color: <?php echo esc_attr($task_color); ?>;">
+                                    colspan="<?php echo esc_attr($colspan); ?>">
+                                    <div class="hhtm-task-content"
+                                         style="background-color: <?php echo esc_attr($task_color); ?>; border-color: <?php echo esc_attr($task_color); ?>;"
+                                         data-task-type="<?php echo esc_attr($task_name); ?>"
+                                         data-task-description="<?php echo esc_attr($task_desc); ?>"
+                                         data-task-icon="<?php echo esc_attr($task_icon); ?>"
+                                         data-task-color="<?php echo esc_attr($task_color); ?>">
                                         <span class="material-icons hhtm-task-icon" style="color: #fff;">
                                             <?php echo esc_html($task_icon); ?>
                                         </span>
-                                        <span class="hhtm-task-name" style="color: #fff;"><?php echo esc_html($task_display); ?></span>
                                     </div>
                                 </td>
                                 <?php

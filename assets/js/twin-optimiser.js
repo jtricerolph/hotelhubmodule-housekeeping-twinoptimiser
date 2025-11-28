@@ -25,7 +25,63 @@
             }
         });
 
+        // Initialize task modal handlers
+        initTaskModal();
+
         console.log('Twin Optimiser module initialized');
+    }
+
+    /**
+     * Initialize task modal click handlers
+     */
+    function initTaskModal() {
+        const modal = $('#hhtm-task-modal');
+        const closeBtn = $('#hhtm-modal-close');
+
+        // Delegate click event for task cells (works with dynamically loaded content)
+        $(document).on('click', '.hhtm-task-content', function(e) {
+            e.preventDefault();
+            const $task = $(this);
+
+            // Get task data from data attributes
+            const taskType = $task.data('task-type');
+            const description = $task.data('task-description');
+            const icon = $task.data('task-icon');
+            const color = $task.data('task-color');
+
+            // Populate modal
+            $('#hhtm-modal-task-type').text(taskType);
+            $('#hhtm-modal-description').text(description || 'No description available');
+            $('#hhtm-modal-icon').text(icon);
+
+            // Set icon wrapper colors
+            $('#hhtm-modal-icon-wrapper').css({
+                'background-color': color,
+                'border-color': color
+            });
+
+            // Show modal
+            modal.addClass('active');
+        });
+
+        // Close modal on close button click
+        closeBtn.on('click', function() {
+            modal.removeClass('active');
+        });
+
+        // Close modal on overlay click
+        modal.on('click', function(e) {
+            if ($(e.target).is('.hhtm-modal-overlay')) {
+                modal.removeClass('active');
+            }
+        });
+
+        // Close modal on ESC key
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && modal.hasClass('active')) {
+                modal.removeClass('active');
+            }
+        });
     }
 
     /**
