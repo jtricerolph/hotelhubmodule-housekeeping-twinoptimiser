@@ -132,38 +132,46 @@
     line-height: 1.2;
 }
 
-/* Booking Cells - Compact, No Text */
+/* Booking Cells - Grid background */
 .hhtm-booking-cell {
-    padding: 0;
+    padding: 3px;
     text-align: center;
-    border: 1px solid #ddd;
+    border: 1px solid #d0d0d0;
     vertical-align: middle;
     position: relative;
-    height: 25px;
-    min-height: 25px;
+    height: 32px;
+    min-height: 32px;
     cursor: pointer;
+    background: #f5f5f5;
 }
 
-/* Vacant/Empty Cell - Grey */
+/* Vacant/Empty Cell - Light grey background */
 .hhtm-cell-vacant {
-    background: #E0E0E0;
+    background: #f5f5f5;
 }
 
-/* Booked Cell - White/Light */
-.hhtm-cell-booked {
-    background: #f8f9fa;
-    border-left: 3px solid #3498db;
-}
-
-/* Twin Cell - Yellow Highlight */
-.hhtm-cell-twin {
-    background: #FFD700;
-    border-left: 3px solid #FFA500;
-}
-
-/* Booking Content - Hidden for compact view */
+/* Booking Content - Styled as rounded block */
 .hhtm-booking-content {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    border-radius: 6px;
+    border: 2px solid;
+    padding: 2px 4px;
+    position: relative;
+}
+
+/* Booked Cell - Purple/Pink block for doubles */
+.hhtm-cell-booked .hhtm-booking-content {
+    background: linear-gradient(135deg, #e1bee7 0%, #ce93d8 100%);
+    border-color: #ab47bc;
+}
+
+/* Twin Cell - Green block for twins */
+.hhtm-cell-twin .hhtm-booking-content {
+    background: linear-gradient(135deg, #a5d6a7 0%, #81c784 100%);
+    border-color: #4caf50;
 }
 
 .hhtm-booking-ref {
@@ -174,54 +182,61 @@
     display: none;
 }
 
-/* Task Cells */
+/* Task Cells - Grid cell background */
 .hhtm-cell-task {
-    border: 2px solid rgba(0, 0, 0, 0.1);
+    background: #f5f5f5 !important;
     position: relative;
 }
 
+/* Task Content - Styled as rounded block */
 .hhtm-task-content {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
+    gap: 4px;
     height: 100%;
-    padding: 2px;
+    border-radius: 6px;
+    border: 2px solid;
+    padding: 2px 6px;
 }
 
 .hhtm-task-icon {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1;
+    opacity: 0.9;
 }
 
 .hhtm-task-name {
     display: none; /* Hidden in mobile compact view */
     font-size: 8px;
     text-align: center;
-    margin-top: 2px;
+    font-weight: 600;
 }
 
 /* Task Indicators on Booking Cells */
 .hhtm-task-indicators {
     display: flex;
-    gap: 2px;
+    gap: 3px;
     position: absolute;
-    top: 2px;
+    top: 1px;
     right: 2px;
     flex-wrap: wrap;
 }
 
 .hhtm-task-indicator {
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1;
-    opacity: 0.8;
+    opacity: 0.85;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
 }
 
-/* Hover Effects */
-.hhtm-cell-booked:hover,
-.hhtm-cell-twin:hover,
-.hhtm-cell-task:hover {
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+/* Hover Effects - Apply to inner blocks */
+.hhtm-cell-booked:hover .hhtm-booking-content,
+.hhtm-cell-twin:hover .hhtm-booking-content,
+.hhtm-cell-task:hover .hhtm-task-content {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transform: translateY(-1px);
     z-index: 2;
 }
 
@@ -302,8 +317,9 @@
     }
 
     .hhtm-booking-cell {
-        height: 22px;
-        min-height: 22px;
+        height: 28px;
+        min-height: 28px;
+        padding: 2px;
     }
 }
 
@@ -335,17 +351,18 @@
     }
 
     .hhtm-booking-cell {
-        height: 28px;
-        min-height: 28px;
+        height: 34px;
+        min-height: 34px;
+        padding: 3px;
     }
 
     /* Task elements on landscape/tablets */
     .hhtm-task-icon {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .hhtm-task-indicator {
-        font-size: 12px;
+        font-size: 13px;
     }
 }
 
@@ -378,13 +395,14 @@
     }
 
     .hhtm-booking-cell {
-        height: 30px;
-        min-height: 30px;
+        height: 38px;
+        min-height: 38px;
+        padding: 4px;
     }
 
     /* Task elements on desktop - show names */
     .hhtm-task-icon {
-        font-size: 18px;
+        font-size: 20px;
     }
 
     .hhtm-task-name {
@@ -393,7 +411,7 @@
     }
 
     .hhtm-task-indicator {
-        font-size: 14px;
+        font-size: 15px;
     }
 }
 

@@ -704,13 +704,12 @@ class HHTM_Frontend {
                                 ?>
                                 <td class="hhtm-booking-cell hhtm-cell-task"
                                     colspan="<?php echo esc_attr($colspan); ?>"
-                                    style="background-color: <?php echo esc_attr($task_color); ?>33;"
                                     title="<?php echo esc_attr($tooltip); ?>">
-                                    <div class="hhtm-task-content">
-                                        <span class="material-icons hhtm-task-icon" style="color: <?php echo esc_attr($task_color); ?>;">
+                                    <div class="hhtm-task-content" style="background-color: <?php echo esc_attr($task_color); ?>; border-color: <?php echo esc_attr($task_color); ?>;">
+                                        <span class="material-icons hhtm-task-icon" style="color: #fff;">
                                             <?php echo esc_html($task_icon); ?>
                                         </span>
-                                        <span class="hhtm-task-name"><?php echo esc_html($task_name); ?></span>
+                                        <span class="hhtm-task-name" style="color: #fff;"><?php echo esc_html($task_name); ?></span>
                                     </div>
                                 </td>
                                 <?php
