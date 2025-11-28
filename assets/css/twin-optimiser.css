@@ -162,6 +162,25 @@
     position: relative;
 }
 
+/* Booking Indicators (Lock, Early Check-in) - Left side */
+.hhtm-booking-indicators {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hhtm-booking-icon {
+    font-size: 14px;
+    line-height: 1;
+    color: #fff;
+    opacity: 0.95;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
 /* Booked Cell - Colors applied via inline styles from settings */
 .hhtm-cell-booked .hhtm-booking-content {
     /* Background and border colors are injected dynamically */
@@ -326,6 +345,10 @@
         min-height: 28px;
         padding: 2px;
     }
+
+    .hhtm-booking-icon {
+        font-size: 12px;
+    }
 }
 
 /* Landscape phones and tablets */
@@ -368,6 +391,10 @@
 
     .hhtm-task-indicator {
         font-size: 13px;
+    }
+
+    .hhtm-booking-icon {
+        font-size: 15px;
     }
 }
 
@@ -412,6 +439,10 @@
 
     .hhtm-task-indicator {
         font-size: 15px;
+    }
+
+    .hhtm-booking-icon {
+        font-size: 16px;
     }
 }
 

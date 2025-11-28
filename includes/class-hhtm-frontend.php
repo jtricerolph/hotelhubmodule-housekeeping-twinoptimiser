@@ -347,17 +347,49 @@ class HHTM_Frontend {
             $location_settings = HHTM_Settings::get_location_settings($hotel->location_id);
             $booking_type = $this->is_twin_booking($booking, $bed_type, $location_settings);
 
+            // Check for locked booking
+            $is_locked = isset($booking['booking_locked']) && $booking['booking_locked'] == '1';
+
+            // Check for early check-in (before 15:00:00)
+            $is_early_checkin = false;
+            $arrival_time = isset($booking['booking_arrival']) ? $booking['booking_arrival'] : '';
+            $eta_time = isset($booking['booking_eta']) ? $booking['booking_eta'] : '';
+
+            // Check booking_arrival time
+            if (!empty($arrival_time)) {
+                $arrival_datetime = strtotime($arrival_time);
+                $arrival_hour = (int)date('H', $arrival_datetime);
+                $arrival_minute = (int)date('i', $arrival_datetime);
+                $arrival_time_minutes = ($arrival_hour * 60) + $arrival_minute;
+                if ($arrival_time_minutes < (15 * 60)) { // Before 15:00:00
+                    $is_early_checkin = true;
+                }
+            }
+
+            // Check booking_eta time if arrival didn't trigger early
+            if (!$is_early_checkin && !empty($eta_time)) {
+                $eta_datetime = strtotime($eta_time);
+                $eta_hour = (int)date('H', $eta_datetime);
+                $eta_minute = (int)date('i', $eta_datetime);
+                $eta_time_minutes = ($eta_hour * 60) + $eta_minute;
+                if ($eta_time_minutes < (15 * 60)) { // Before 15:00:00
+                    $is_early_checkin = true;
+                }
+            }
+
             // Fill in grid for booking dates
             foreach ($dates as $date) {
                 if ($date >= $checkin && $date < $checkout) {
                     if (!isset($grid[$grid_key][$date])) {
                         $grid[$grid_key][$date] = array(
-                            'booking_id'   => $booking['booking_id'],
-                            'booking_ref'  => $booking['booking_reference_id'],
-                            'bed_type'     => $bed_type,
-                            'booking_type' => $booking_type,
-                            'checkin'      => $checkin,
-                            'checkout'     => $checkout,
+                            'booking_id'      => $booking['booking_id'],
+                            'booking_ref'     => $booking['booking_reference_id'],
+                            'bed_type'        => $bed_type,
+                            'booking_type'    => $booking_type,
+                            'checkin'         => $checkin,
+                            'checkout'        => $checkout,
+                            'is_locked'       => $is_locked,
+                            'is_early_checkin' => $is_early_checkin,
                         );
                     }
                 }
@@ -776,11 +808,24 @@ class HHTM_Frontend {
                                         }
                                     }
                                 }
+                                // Check for early check-in and locked status
+                                $is_early_checkin = isset($booking['is_early_checkin']) ? $booking['is_early_checkin'] : false;
+                                $is_locked = isset($booking['is_locked']) ? $booking['is_locked'] : false;
                                 ?>
                                 <td class="hhtm-booking-cell <?php echo esc_attr($cell_class); ?>"
                                     colspan="<?php echo esc_attr($colspan); ?>"
                                     title="<?php echo esc_attr($tooltip); ?>">
                                     <div class="hhtm-booking-content">
+                                        <?php if ($is_early_checkin || $is_locked): ?>
+                                            <div class="hhtm-booking-indicators">
+                                                <?php if ($is_early_checkin): ?>
+                                                    <span class="material-icons hhtm-booking-icon hhtm-early-checkin-icon" title="Early Check-in">acute</span>
+                                                <?php endif; ?>
+                                                <?php if ($is_locked): ?>
+                                                    <span class="material-icons hhtm-booking-icon hhtm-locked-icon" title="Locked to Room">lock</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
                                         <span class="hhtm-booking-ref"><?php echo esc_html($booking['booking_ref']); ?></span>
                                         <?php if (!empty($booking['bed_type'])): ?>
                                             <span class="hhtm-bed-type"><?php echo esc_html($booking['bed_type']); ?></span>
