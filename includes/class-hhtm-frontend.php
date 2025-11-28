@@ -819,7 +819,7 @@ class HHTM_Frontend {
                                         <?php if ($is_early_checkin || $is_locked): ?>
                                             <div class="hhtm-booking-indicators">
                                                 <?php if ($is_early_checkin): ?>
-                                                    <span class="material-icons hhtm-booking-icon hhtm-early-checkin-icon" title="Early Check-in">acute</span>
+                                                    <span class="material-icons hhtm-booking-icon hhtm-early-checkin-icon" title="Early Check-in">schedule</span>
                                                 <?php endif; ?>
                                                 <?php if ($is_locked): ?>
                                                     <span class="material-icons hhtm-booking-icon hhtm-locked-icon" title="Locked to Room">lock</span>
