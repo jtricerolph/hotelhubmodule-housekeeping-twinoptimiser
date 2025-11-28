@@ -96,7 +96,7 @@ class HHTM_Frontend {
                 <div class="hhtm-modal-header">
                     <div class="hhtm-modal-title">
                         <div class="hhtm-modal-icon" id="hhtm-modal-icon-wrapper">
-                            <span class="material-icons" id="hhtm-modal-icon"></span>
+                            <span class="material-symbols-outlined" id="hhtm-modal-icon"></span>
                         </div>
                         <span id="hhtm-modal-task-type"></span>
                     </div>
@@ -819,10 +819,10 @@ class HHTM_Frontend {
                                         <?php if ($is_early_checkin || $is_locked): ?>
                                             <div class="hhtm-booking-indicators">
                                                 <?php if ($is_early_checkin): ?>
-                                                    <span class="material-icons hhtm-booking-icon hhtm-early-checkin-icon" title="Early Check-in">schedule</span>
+                                                    <span class="material-symbols-outlined hhtm-booking-icon hhtm-early-checkin-icon" title="Early Check-in">acute</span>
                                                 <?php endif; ?>
                                                 <?php if ($is_locked): ?>
-                                                    <span class="material-icons hhtm-booking-icon hhtm-locked-icon" title="Locked to Room">lock</span>
+                                                    <span class="material-symbols-outlined hhtm-booking-icon hhtm-locked-icon" title="Locked to Room">lock</span>
                                                 <?php endif; ?>
                                             </div>
                                         <?php endif; ?>
@@ -837,7 +837,7 @@ class HHTM_Frontend {
                                                     $task_color = isset($task['color']) ? $task['color'] : '#9e9e9e';
                                                     $task_icon = isset($task['icon']) ? $task['icon'] : 'task';
                                                     ?>
-                                                    <span class="hhtm-task-indicator material-icons" style="color: <?php echo esc_attr($task_color); ?>;">
+                                                    <span class="hhtm-task-indicator material-symbols-outlined" style="color: <?php echo esc_attr($task_color); ?>;">
                                                         <?php echo esc_html($task_icon); ?>
                                                     </span>
                                                 <?php endforeach; ?>
@@ -877,7 +877,7 @@ class HHTM_Frontend {
                                          data-task-description="<?php echo esc_attr($task_desc); ?>"
                                          data-task-icon="<?php echo esc_attr($task_icon); ?>"
                                          data-task-color="<?php echo esc_attr($task_color); ?>">
-                                        <span class="material-icons hhtm-task-icon" style="color: #fff;">
+                                        <span class="material-symbols-outlined hhtm-task-icon" style="color: #fff;">
                                             <?php echo esc_html($task_icon); ?>
                                         </span>
                                     </div>
@@ -946,8 +946,8 @@ class HHTM_Frontend {
      * Enqueue assets inline for AJAX-loaded modules.
      */
     private function enqueue_inline_assets() {
-        // Output Material Icons stylesheet
-        echo '<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">';
+        // Output Material Symbols stylesheet (includes newer icons like 'acute')
+        echo '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">';
 
         // Output module CSS
         echo '<link rel="stylesheet" href="' . esc_url(HHTM_PLUGIN_URL . 'assets/css/twin-optimiser.css?ver=' . HHTM_VERSION) . '">';

@@ -3,7 +3,7 @@
  * Plugin Name: Hotel Hub Module - Housekeeping - Twin Optimiser
  * Plugin URI: https://github.com/yourusername/hotelhubmodule-housekeeping-twinoptomiser
  * Description: Twin room optimisation module for Hotel Hub App - displays booking grid to identify twin opportunities
- * Version: 1.2.3
+ * Version: 1.2.4
  * Author: Your Name
  * Author URI: https://yourwebsite.com
  * License: GPL v2 or later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('HHTM_VERSION', '1.2.3');
+define('HHTM_VERSION', '1.2.4');
 define('HHTM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('HHTM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('HHTM_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -182,10 +182,10 @@ class HotelHub_Module_Twin_Optimiser {
             return;
         }
 
-        // Enqueue Material Icons
+        // Enqueue Material Symbols (includes newer icons like 'acute')
         wp_enqueue_style(
-            'material-icons',
-            'https://fonts.googleapis.com/icon?family=Material+Icons',
+            'material-symbols',
+            'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200',
             array(),
             null
         );
@@ -194,7 +194,7 @@ class HotelHub_Module_Twin_Optimiser {
         wp_enqueue_style(
             'hhtm-twin-optimiser',
             HHTM_PLUGIN_URL . 'assets/css/twin-optimiser.css',
-            array('material-icons'),
+            array('material-symbols'),
             HHTM_VERSION
         );
 
