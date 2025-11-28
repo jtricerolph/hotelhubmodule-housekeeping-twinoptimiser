@@ -162,16 +162,14 @@
     position: relative;
 }
 
-/* Booked Cell - Purple/Pink block for doubles */
+/* Booked Cell - Colors applied via inline styles from settings */
 .hhtm-cell-booked .hhtm-booking-content {
-    background: linear-gradient(135deg, #e1bee7 0%, #ce93d8 100%);
-    border-color: #ab47bc;
+    /* Background and border colors are injected dynamically */
 }
 
-/* Twin Cell - Green block for twins */
+/* Twin Cell - Colors applied via inline styles from settings */
 .hhtm-cell-twin .hhtm-booking-content {
-    background: linear-gradient(135deg, #a5d6a7 0%, #81c784 100%);
-    border-color: #4caf50;
+    /* Background and border colors are injected dynamically */
 }
 
 .hhtm-booking-ref {

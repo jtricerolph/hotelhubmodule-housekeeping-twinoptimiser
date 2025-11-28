@@ -167,7 +167,7 @@ class HHTM_Frontend {
         $categories_sort = isset($integration['categories_sort']) ? $integration['categories_sort'] : array();
 
         // Process bookings and tasks into grid structure
-        $grid_data = $this->process_bookings($bookings, $tasks, $start_date, $days, $custom_field_name, $categories_sort, $task_types);
+        $grid_data = $this->process_bookings($bookings, $tasks, $start_date, $days, $custom_field_name, $categories_sort, $task_types, $hotel);
 
         // Check if processing resulted in any rooms
         if (empty($grid_data['rooms'])) {
@@ -177,6 +177,24 @@ class HHTM_Frontend {
             echo '</div>';
             return;
         }
+
+        // Get location colors
+        $normal_color = HHTM_Settings::get_normal_booking_color($hotel->location_id);
+        $twin_color = HHTM_Settings::get_twin_booking_color($hotel->location_id);
+
+        // Inject custom CSS for colors
+        ?>
+        <style>
+            .hhtm-cell-booked .hhtm-booking-content {
+                background: <?php echo esc_attr($normal_color); ?> !important;
+                border-color: <?php echo esc_attr($this->adjust_color_brightness($normal_color, -20)); ?> !important;
+            }
+            .hhtm-cell-twin .hhtm-booking-content {
+                background: <?php echo esc_attr($twin_color); ?> !important;
+                border-color: <?php echo esc_attr($this->adjust_color_brightness($twin_color, -20)); ?> !important;
+            }
+        </style>
+        <?php
 
         // Render grid
         $this->render_grid_table($grid_data, $start_date, $days);
@@ -192,9 +210,10 @@ class HHTM_Frontend {
      * @param string $custom_field_name Custom field name for twin detection.
      * @param array  $categories_sort  Categories and sites sort configuration.
      * @param array  $task_types       Task types configuration with colors and icons.
+     * @param object $hotel            Hotel object with location_id.
      * @return array Processed grid data.
      */
-    private function process_bookings($bookings, $tasks, $start_date, $days, $custom_field_name, $categories_sort = array(), $task_types = array()) {
+    private function process_bookings($bookings, $tasks, $start_date, $days, $custom_field_name, $categories_sort = array(), $task_types = array(), $hotel = null) {
         $grid = array();
         $rooms = array();
 
@@ -294,7 +313,10 @@ class HHTM_Frontend {
 
             // Get bed type
             $bed_type = $this->get_bed_type($booking, $custom_field_name);
-            $is_twin = $this->is_twin_booking($bed_type);
+
+            // Get location settings for enhanced detection
+            $location_settings = HHTM_Settings::get_location_settings($hotel->location_id);
+            $is_twin = $this->is_twin_booking($booking, $bed_type, $location_settings);
 
             // Fill in grid for booking dates
             foreach ($dates as $date) {
@@ -510,25 +532,97 @@ class HHTM_Frontend {
     }
 
     /**
-     * Check if booking is a twin based on bed type.
+     * Check if booking is a twin using enhanced detection.
      *
-     * @param string $bed_type Bed type value.
+     * @param array  $booking          Full booking data.
+     * @param string $bed_type         Bed type value from legacy field.
+     * @param array  $location_settings Location settings with detection rules.
      * @return bool True if twin, false otherwise.
      */
-    private function is_twin_booking($bed_type) {
-        if (empty($bed_type)) {
-            return false;
+    private function is_twin_booking($booking, $bed_type, $location_settings) {
+        // Enhanced custom field detection
+        $custom_field_names = !empty($location_settings['custom_field_names']) ?
+            array_map('trim', explode(',', $location_settings['custom_field_names'])) : array();
+        $custom_field_values = !empty($location_settings['custom_field_values']) ?
+            array_map('trim', explode(',', $location_settings['custom_field_values'])) : array();
+
+        // Check configured custom fields
+        if (!empty($custom_field_names) && !empty($custom_field_values)) {
+            foreach ($custom_field_names as $field_name) {
+                if (empty($field_name)) {
+                    continue;
+                }
+
+                // Get custom field value from booking
+                $field_value = '';
+                if (isset($booking['booking_custom_fields']) && is_array($booking['booking_custom_fields'])) {
+                    foreach ($booking['booking_custom_fields'] as $custom_field) {
+                        if (isset($custom_field['name']) && $custom_field['name'] === $field_name) {
+                            $field_value = isset($custom_field['value']) ? $custom_field['value'] : '';
+                            break;
+                        }
+                    }
+                }
+
+                if (!empty($field_value)) {
+                    $field_value_lower = strtolower($field_value);
+
+                    // Check against configured values
+                    foreach ($custom_field_values as $search_value) {
+                        if (empty($search_value)) {
+                            continue;
+                        }
+
+                        $search_value_lower = strtolower($search_value);
+                        if (strpos($field_value_lower, $search_value_lower) !== false) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
 
-        $bed_type_lower = strtolower($bed_type);
+        // Enhanced notes search
+        $notes_search_terms = !empty($location_settings['notes_search_terms']) ?
+            array_map('trim', explode(',', $location_settings['notes_search_terms'])) : array();
 
-        // Check for twin indicators
-        if (strpos($bed_type_lower, 'twin') !== false) {
-            return true;
+        if (!empty($notes_search_terms)) {
+            if (isset($booking['notes']) && is_array($booking['notes'])) {
+                foreach ($booking['notes'] as $note) {
+                    $note_content = isset($note['content']) ? $note['content'] : '';
+                    if (empty($note_content)) {
+                        continue;
+                    }
+
+                    $note_content_lower = strtolower($note_content);
+
+                    // Check against configured search terms
+                    foreach ($notes_search_terms as $search_term) {
+                        if (empty($search_term)) {
+                            continue;
+                        }
+
+                        $search_term_lower = strtolower($search_term);
+                        if (strpos($note_content_lower, $search_term_lower) !== false) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
 
-        if (preg_match('/2\s*x?\s*single/i', $bed_type_lower)) {
-            return true;
+        // Legacy detection (fallback)
+        if (!empty($bed_type)) {
+            $bed_type_lower = strtolower($bed_type);
+
+            // Check for twin indicators
+            if (strpos($bed_type_lower, 'twin') !== false) {
+                return true;
+            }
+
+            if (preg_match('/2\s*x?\s*single/i', $bed_type_lower)) {
+                return true;
+            }
         }
 
         return false;
@@ -767,5 +861,30 @@ class HHTM_Frontend {
         $html = ob_get_clean();
 
         wp_send_json_success(array('html' => $html));
+    }
+
+    /**
+     * Adjust color brightness for borders.
+     *
+     * @param string $hex_color Hex color code.
+     * @param int    $percent   Percent to adjust (-100 to 100).
+     * @return string Adjusted hex color.
+     */
+    private function adjust_color_brightness($hex_color, $percent) {
+        // Remove # if present
+        $hex_color = ltrim($hex_color, '#');
+
+        // Convert to RGB
+        $r = hexdec(substr($hex_color, 0, 2));
+        $g = hexdec(substr($hex_color, 2, 2));
+        $b = hexdec(substr($hex_color, 4, 2));
+
+        // Adjust
+        $r = max(0, min(255, $r + ($r * $percent / 100)));
+        $g = max(0, min(255, $g + ($g * $percent / 100)));
+        $b = max(0, min(255, $b + ($b * $percent / 100)));
+
+        // Convert back to hex
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
     }
 }
