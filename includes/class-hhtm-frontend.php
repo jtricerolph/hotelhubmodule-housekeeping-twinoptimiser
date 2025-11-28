@@ -383,15 +383,25 @@ class HHTM_Frontend {
                     $rooms[] = $grid_key;
                 }
 
-                // Get task date (NewBook API returns task_when_date as YYYY-MM-DD)
-                $task_date = isset($task['task_when_date']) ? date('Y-m-d', strtotime($task['task_when_date'])) : '';
+                // Get task dates - handle both single-day and multi-day tasks
+                $task_dates = array();
 
-                if (empty($task_date)) {
-                    continue;
+                if (isset($task['task_when_date']) && !empty($task['task_when_date'])) {
+                    // Single-day task
+                    $task_dates[] = date('Y-m-d', strtotime($task['task_when_date']));
+                } elseif (isset($task['task_period_from']) && isset($task['task_period_to'])) {
+                    // Multi-day task - create array of all dates in range
+                    $period_from = date('Y-m-d', strtotime($task['task_period_from']));
+                    $period_to = date('Y-m-d', strtotime($task['task_period_to']));
+
+                    $current_date = $period_from;
+                    while ($current_date < $period_to) {
+                        $task_dates[] = $current_date;
+                        $current_date = date('Y-m-d', strtotime($current_date . ' + 1 day'));
+                    }
                 }
 
-                // Check if task date is within our date range
-                if (!in_array($task_date, $dates)) {
+                if (empty($task_dates)) {
                     continue;
                 }
 
@@ -399,37 +409,45 @@ class HHTM_Frontend {
                 $task_type_id = isset($task['task_type_id']) ? $task['task_type_id'] : '';
                 $task_type_config = isset($task_types_map[$task_type_id]) ? $task_types_map[$task_type_id] : null;
 
-                // Add task to grid
-                if (!isset($grid[$grid_key][$task_date])) {
-                    $grid[$grid_key][$task_date] = array();
-                }
-
-                // Store task info
-                $task_info = array(
-                    'type'        => 'task',
-                    'task_id'     => isset($task['task_id']) ? $task['task_id'] : '',
-                    'task_type_id' => $task_type_id,
-                    'description' => isset($task['task_description']) ? $task['task_description'] : '',
-                    'date'        => $task_date,
-                );
-
-                // Add task type styling if configured
-                if ($task_type_config) {
-                    $task_info['color'] = isset($task_type_config['color']) ? $task_type_config['color'] : '#9e9e9e';
-                    $task_info['icon'] = isset($task_type_config['icon']) ? $task_type_config['icon'] : 'task';
-                    $task_info['task_type_name'] = isset($task_type_config['name']) ? $task_type_config['name'] : '';
-                }
-
-                // If there's already a booking on this date, store task separately
-                if (isset($grid[$grid_key][$task_date]['booking_id'])) {
-                    // Initialize tasks array if it doesn't exist
-                    if (!isset($grid[$grid_key][$task_date]['tasks'])) {
-                        $grid[$grid_key][$task_date]['tasks'] = array();
+                // Add task to grid for each date it spans
+                foreach ($task_dates as $task_date) {
+                    // Check if task date is within our date range
+                    if (!in_array($task_date, $dates)) {
+                        continue;
                     }
-                    $grid[$grid_key][$task_date]['tasks'][] = $task_info;
-                } else {
-                    // No booking on this date, task takes the cell
-                    $grid[$grid_key][$task_date] = $task_info;
+
+                    // Add task to grid
+                    if (!isset($grid[$grid_key][$task_date])) {
+                        $grid[$grid_key][$task_date] = array();
+                    }
+
+                    // Store task info
+                    $task_info = array(
+                        'type'        => 'task',
+                        'task_id'     => isset($task['task_id']) ? $task['task_id'] : '',
+                        'task_type_id' => $task_type_id,
+                        'description' => isset($task['task_description']) ? $task['task_description'] : '',
+                        'date'        => $task_date,
+                    );
+
+                    // Add task type styling if configured
+                    if ($task_type_config) {
+                        $task_info['color'] = isset($task_type_config['color']) ? $task_type_config['color'] : '#9e9e9e';
+                        $task_info['icon'] = isset($task_type_config['icon']) ? $task_type_config['icon'] : 'task';
+                        $task_info['task_type_name'] = isset($task_type_config['name']) ? $task_type_config['name'] : '';
+                    }
+
+                    // If there's already a booking on this date, store task separately
+                    if (isset($grid[$grid_key][$task_date]['booking_id'])) {
+                        // Initialize tasks array if it doesn't exist
+                        if (!isset($grid[$grid_key][$task_date]['tasks'])) {
+                            $grid[$grid_key][$task_date]['tasks'] = array();
+                        }
+                        $grid[$grid_key][$task_date]['tasks'][] = $task_info;
+                    } else {
+                        // No booking on this date, task takes the cell
+                        $grid[$grid_key][$task_date] = $task_info;
+                    }
                 }
             }
         }
