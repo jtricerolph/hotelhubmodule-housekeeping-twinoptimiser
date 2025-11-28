@@ -495,11 +495,13 @@
     left: 0;
     z-index: 10;
     width: fit-content;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #667eea;
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .hhtm-category-header:hover .hhtm-category-name {
-    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
+    background-color: #7688eb;
+    background-image: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-toggle {
