@@ -461,13 +461,8 @@
 
 /* Category Headers */
 .hhtm-category-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     cursor: pointer;
     user-select: none;
-}
-
-.hhtm-category-header:hover {
-    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-header td {
@@ -479,7 +474,14 @@
     letter-spacing: 0.5px;
     border-top: 2px solid #fff;
     border-bottom: 2px solid #fff;
-    position: relative;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hhtm-category-header:hover td {
+    background: linear-gradient(135deg, #7688eb 0%, #8659ad 100%);
 }
 
 .hhtm-category-header:first-child td {
