@@ -80,7 +80,8 @@
     font-size: 9px;
     position: sticky;
     left: 0;
-    z-index: 10;
+    top: 0;
+    z-index: 20;
     background: #2c3e50;
 }
 
@@ -90,8 +91,12 @@
     font-weight: 600;
     font-size: 7px;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
-    width: 24px;
-    min-width: 24px;
+    width: 29px;
+    min-width: 29px;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    background: #2c3e50;
 }
 
 .hhtm-date-label {
@@ -126,7 +131,7 @@
     border-right: 2px solid #bdc3c7;
     position: sticky;
     left: 0;
-    z-index: 5;
+    z-index: 8;
     font-size: 10px;
     text-align: center;
     line-height: 1.2;
@@ -335,8 +340,8 @@
     }
 
     .hhtm-date-header {
-        width: 26px;
-        min-width: 26px;
+        width: 31px;
+        min-width: 31px;
         font-size: 7px;
     }
 
@@ -369,8 +374,8 @@
     }
 
     .hhtm-date-header {
-        width: 28px;
-        min-width: 28px;
+        width: 34px;
+        min-width: 34px;
         font-size: 8px;
     }
 
@@ -416,8 +421,8 @@
     }
 
     .hhtm-date-header {
-        width: 32px;
-        min-width: 32px;
+        width: 38px;
+        min-width: 38px;
         padding: 5px 2px;
         font-size: 9px;
     }
@@ -449,6 +454,9 @@
 /* Category Headers */
 .hhtm-category-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: sticky;
+    top: 35px;
+    z-index: 10;
 }
 
 .hhtm-category-header td {
@@ -462,7 +470,8 @@
     border-bottom: 2px solid #fff;
     position: sticky;
     left: 0;
-    z-index: 5;
+    z-index: 12;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .hhtm-category-header:first-child td {
