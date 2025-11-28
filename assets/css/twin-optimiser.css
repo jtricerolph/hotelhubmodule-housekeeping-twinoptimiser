@@ -362,6 +362,12 @@
     .hhtm-booking-icon {
         font-size: 8px;
     }
+
+    .hhtm-category-name {
+        width: 32px;
+        min-width: 32px;
+        font-size: 10px;
+    }
 }
 
 /* Landscape phones and tablets */
@@ -408,6 +414,11 @@
 
     .hhtm-booking-icon {
         font-size: 10px;
+    }
+
+    .hhtm-category-name {
+        width: 40px;
+        min-width: 40px;
     }
 }
 
@@ -457,6 +468,11 @@
     .hhtm-booking-icon {
         font-size: 11px;
     }
+
+    .hhtm-category-name {
+        width: 45px;
+        min-width: 45px;
+    }
 }
 
 /* Category Headers */
@@ -465,7 +481,7 @@
 }
 
 .hhtm-category-name {
-    padding: 10px 12px;
+    padding: 10px 4px;
     color: #fff;
     font-weight: 700;
     font-size: 11px;
@@ -473,10 +489,14 @@
     letter-spacing: 0.5px;
     border-top: 2px solid #fff;
     border-bottom: 2px solid #fff;
+    border-right: 2px solid #bdc3c7;
     position: sticky;
     left: 0;
     top: 95px;
     z-index: 12;
+    width: 35px;
+    min-width: 35px;
+    text-align: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
