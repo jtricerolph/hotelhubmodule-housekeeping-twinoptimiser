@@ -192,11 +192,19 @@
 }
 
 /* Twin Cell - Colors applied via inline styles from settings */
+.hhtm-cell-twin {
+    cursor: pointer;
+}
+
 .hhtm-cell-twin .hhtm-booking-content {
     /* Background and border colors are injected dynamically */
 }
 
 /* Potential Twin Cell - Colors applied via inline styles from settings */
+.hhtm-cell-potential-twin {
+    cursor: pointer;
+}
+
 .hhtm-cell-potential-twin .hhtm-booking-content {
     /* Background and border colors are injected dynamically */
 }

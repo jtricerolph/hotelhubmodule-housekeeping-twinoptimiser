@@ -28,6 +28,12 @@
         // Initialize task modal handlers
         initTaskModal();
 
+        // Initialize twin detection modal handlers
+        initTwinModal();
+
+        // Initialize global key handlers
+        initGlobalKeyHandlers();
+
         console.log('Twin Optimiser module initialized');
     }
 
@@ -76,10 +82,104 @@
             }
         });
 
-        // Close modal on ESC key
-        $(document).on('keydown', function(e) {
-            if (e.key === 'Escape' && modal.hasClass('active')) {
+        // NOTE: ESC key handler is shared - see bottom of file
+    }
+
+    /**
+     * Initialize twin detection modal click handlers
+     */
+    function initTwinModal() {
+        const modal = $('#hhtm-twin-modal');
+        const closeBtn = $('#hhtm-twin-modal-close');
+
+        // Delegate click event for twin booking cells
+        $(document).on('click', '.hhtm-cell-twin, .hhtm-cell-potential-twin', function(e) {
+            const $cell = $(this);
+            const twinType = $cell.data('twin-type');
+            const detectionDetails = $cell.data('detection-details');
+
+            if (!detectionDetails) {
+                return;
+            }
+
+            // Hide all sections first
+            $('#hhtm-twin-field-section').hide();
+            $('#hhtm-twin-value-section').hide();
+            $('#hhtm-twin-term-section').hide();
+            $('#hhtm-twin-note-section').hide();
+
+            if (twinType === 'twin') {
+                // Confirmed twin - show custom field details
+                $('#hhtm-twin-modal-title').text('Confirmed Twin Booking');
+                $('#hhtm-twin-modal-icon').text('verified').css('color', '#4caf50');
+
+                if (detectionDetails.field_name) {
+                    $('#hhtm-twin-field-name').text(detectionDetails.field_name);
+                    $('#hhtm-twin-field-section').show();
+                }
+
+                if (detectionDetails.field_value) {
+                    $('#hhtm-twin-field-value').text(detectionDetails.field_value);
+                    $('#hhtm-twin-value-section').show();
+                }
+
+                if (detectionDetails.matched_term) {
+                    $('#hhtm-twin-matched-term').text(detectionDetails.matched_term);
+                    $('#hhtm-twin-term-section').show();
+                }
+            } else if (twinType === 'potential_twin') {
+                // Potential twin - show note details with highlighting
+                $('#hhtm-twin-modal-title').text('Potential Twin Booking');
+                $('#hhtm-twin-modal-icon').text('help').css('color', '#ff9800');
+
+                if (detectionDetails.matched_term) {
+                    $('#hhtm-twin-matched-term').text(detectionDetails.matched_term);
+                    $('#hhtm-twin-term-section').show();
+                }
+
+                if (detectionDetails.note_content) {
+                    const noteContent = detectionDetails.note_content;
+                    const matchedTerm = detectionDetails.matched_term;
+
+                    // Highlight matched term in note content
+                    let highlightedNote = noteContent;
+                    if (matchedTerm) {
+                        const regex = new RegExp('(' + matchedTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                        highlightedNote = noteContent.replace(regex, '<mark style="background: #ffeb3b; padding: 2px 4px; border-radius: 2px;">$1</mark>');
+                    }
+
+                    $('#hhtm-twin-note-content').html(highlightedNote);
+                    $('#hhtm-twin-note-section').show();
+                }
+            }
+
+            // Show modal
+            modal.addClass('active');
+        });
+
+        // Close modal on close button click
+        closeBtn.on('click', function() {
+            modal.removeClass('active');
+        });
+
+        // Close modal on overlay click
+        modal.on('click', function(e) {
+            if ($(e.target).is('.hhtm-modal-overlay')) {
                 modal.removeClass('active');
+            }
+        });
+
+        // NOTE: ESC key handler is shared - see bottom of file
+    }
+
+    /**
+     * Shared ESC key handler for all modals
+     */
+    function initGlobalKeyHandlers() {
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                // Close any active modal
+                $('.hhtm-modal-overlay.active').removeClass('active');
             }
         });
     }

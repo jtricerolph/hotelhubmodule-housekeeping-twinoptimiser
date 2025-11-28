@@ -110,6 +110,37 @@ class HHTM_Frontend {
                 </div>
             </div>
         </div>
+
+        <!-- Twin Detection Modal -->
+        <div id="hhtm-twin-modal" class="hhtm-modal-overlay">
+            <div class="hhtm-modal">
+                <div class="hhtm-modal-header">
+                    <div class="hhtm-modal-title">
+                        <span class="material-symbols-outlined" style="font-size: 24px; margin-right: 8px;" id="hhtm-twin-modal-icon">info</span>
+                        <span id="hhtm-twin-modal-title"></span>
+                    </div>
+                    <button class="hhtm-modal-close" id="hhtm-twin-modal-close">&times;</button>
+                </div>
+                <div class="hhtm-modal-body">
+                    <div class="hhtm-modal-section" id="hhtm-twin-field-section" style="display: none;">
+                        <div class="hhtm-modal-label">Custom Field</div>
+                        <div class="hhtm-modal-value" id="hhtm-twin-field-name"></div>
+                    </div>
+                    <div class="hhtm-modal-section" id="hhtm-twin-value-section" style="display: none;">
+                        <div class="hhtm-modal-label">Field Value</div>
+                        <div class="hhtm-modal-value" id="hhtm-twin-field-value"></div>
+                    </div>
+                    <div class="hhtm-modal-section" id="hhtm-twin-term-section" style="display: none;">
+                        <div class="hhtm-modal-label">Matched Term</div>
+                        <div class="hhtm-modal-value" id="hhtm-twin-matched-term"></div>
+                    </div>
+                    <div class="hhtm-modal-section" id="hhtm-twin-note-section" style="display: none;">
+                        <div class="hhtm-modal-label">Note Content</div>
+                        <div class="hhtm-modal-value" id="hhtm-twin-note-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php
     }
 
@@ -345,7 +376,8 @@ class HHTM_Frontend {
 
             // Get location settings for enhanced detection
             $location_settings = HHTM_Settings::get_location_settings($hotel->location_id);
-            $booking_type = $this->is_twin_booking($booking, $bed_type, $location_settings);
+            $detection_result = $this->is_twin_booking($booking, $bed_type, $location_settings);
+            $booking_type = $detection_result['type'];
 
             // Check for locked booking
             $is_locked = isset($booking['booking_locked']) && $booking['booking_locked'] == '1';
@@ -382,14 +414,15 @@ class HHTM_Frontend {
                 if ($date >= $checkin && $date < $checkout) {
                     if (!isset($grid[$grid_key][$date])) {
                         $grid[$grid_key][$date] = array(
-                            'booking_id'      => $booking['booking_id'],
-                            'booking_ref'     => $booking['booking_reference_id'],
-                            'bed_type'        => $bed_type,
-                            'booking_type'    => $booking_type,
-                            'checkin'         => $checkin,
-                            'checkout'        => $checkout,
-                            'is_locked'       => $is_locked,
-                            'is_early_checkin' => $is_early_checkin,
+                            'booking_id'        => $booking['booking_id'],
+                            'booking_ref'       => $booking['booking_reference_id'],
+                            'bed_type'          => $bed_type,
+                            'booking_type'      => $booking_type,
+                            'checkin'           => $checkin,
+                            'checkout'          => $checkout,
+                            'is_locked'         => $is_locked,
+                            'is_early_checkin'  => $is_early_checkin,
+                            'detection_details' => $detection_result,
                         );
                     }
                 }
@@ -636,7 +669,12 @@ class HHTM_Frontend {
 
                         $search_value_lower = strtolower($search_value);
                         if (strpos($field_value_lower, $search_value_lower) !== false) {
-                            return 'twin'; // Confirmed twin via custom fields
+                            return array(
+                                'type' => 'twin',
+                                'field_name' => $field_name,
+                                'field_value' => $field_value,
+                                'matched_term' => $search_value,
+                            );
                         }
                     }
                 }
@@ -649,11 +687,21 @@ class HHTM_Frontend {
 
             // Check for twin indicators
             if (strpos($bed_type_lower, 'twin') !== false) {
-                return 'twin'; // Confirmed twin via legacy field
+                return array(
+                    'type' => 'twin',
+                    'field_name' => 'Bed Type (Legacy)',
+                    'field_value' => $bed_type,
+                    'matched_term' => 'twin',
+                );
             }
 
             if (preg_match('/2\s*x?\s*single/i', $bed_type_lower)) {
-                return 'twin'; // Confirmed twin via legacy field
+                return array(
+                    'type' => 'twin',
+                    'field_name' => 'Bed Type (Legacy)',
+                    'field_value' => $bed_type,
+                    'matched_term' => '2 x single',
+                );
             }
         }
 
@@ -679,14 +727,18 @@ class HHTM_Frontend {
 
                         $search_term_lower = strtolower($search_term);
                         if (strpos($note_content_lower, $search_term_lower) !== false) {
-                            return 'potential_twin'; // Potential twin - notes suggest but fields don't confirm
+                            return array(
+                                'type' => 'potential_twin',
+                                'note_content' => $note_content,
+                                'matched_term' => $search_term,
+                            );
                         }
                     }
                 }
             }
         }
 
-        return 'normal';
+        return array('type' => 'normal');
     }
 
     /**
@@ -811,10 +863,17 @@ class HHTM_Frontend {
                                 // Check for early check-in and locked status
                                 $is_early_checkin = isset($booking['is_early_checkin']) ? $booking['is_early_checkin'] : false;
                                 $is_locked = isset($booking['is_locked']) ? $booking['is_locked'] : false;
+
+                                // Get detection details for twin bookings
+                                $detection_details = isset($booking['detection_details']) ? $booking['detection_details'] : array();
                                 ?>
                                 <td class="hhtm-booking-cell <?php echo esc_attr($cell_class); ?>"
                                     colspan="<?php echo esc_attr($colspan); ?>"
-                                    title="<?php echo esc_attr($tooltip); ?>">
+                                    title="<?php echo esc_attr($tooltip); ?>"
+                                    <?php if ($booking_type === 'twin' || $booking_type === 'potential_twin'): ?>
+                                        data-twin-type="<?php echo esc_attr($booking_type); ?>"
+                                        data-detection-details="<?php echo esc_attr(wp_json_encode($detection_details)); ?>"
+                                    <?php endif; ?>>
                                     <div class="hhtm-booking-content">
                                         <?php if ($is_early_checkin || $is_locked): ?>
                                             <div class="hhtm-booking-indicators">
