@@ -249,37 +249,41 @@ class HHTM_Frontend {
             $room_name = isset($booking['site_name']) ? $booking['site_name'] : '';
             $room_site_id = isset($booking['site_id']) ? $booking['site_id'] : '';
 
-            // Skip bookings without room assignment
-            if (empty($room_name)) {
+            // Skip bookings without room assignment or site_id
+            if (empty($room_name) || empty($room_site_id)) {
                 continue;
             }
 
             // Skip excluded sites (using site_id for matching)
-            if ($room_site_id && in_array($room_site_id, $excluded_sites)) {
+            if (in_array($room_site_id, $excluded_sites)) {
                 continue;
             }
 
             // Skip sites from excluded categories (using site_id and category_id for matching)
-            if ($room_site_id && isset($site_to_category[$room_site_id])) {
+            if (isset($site_to_category[$room_site_id])) {
                 $site_category_id = $site_to_category[$room_site_id]['category_id'];
                 if (in_array($site_category_id, $excluded_categories)) {
                     continue;
                 }
             }
 
+            // Use site_id as grid key to consolidate bookings and tasks for same site
+            $grid_key = $room_site_id;
+
             // Initialize room if not exists
-            if (!isset($grid[$room_name])) {
+            if (!isset($grid[$grid_key])) {
                 // Determine category name (use configured category if site_id matches, otherwise Uncategorized)
                 $category_name = 'Uncategorized';
-                if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                if (isset($site_to_category[$room_site_id])) {
                     $category_name = $site_to_category[$room_site_id]['category_name'];
                 }
 
-                $grid[$room_name] = array(
-                    'category' => $category_name,
-                    'site_id'  => $room_site_id,
+                $grid[$grid_key] = array(
+                    'category'  => $category_name,
+                    'site_id'   => $room_site_id,
+                    'site_name' => $room_name,
                 );
-                $rooms[] = $room_name;
+                $rooms[] = $grid_key;
             }
 
             // Get booking dates (NewBook API field names)
@@ -293,8 +297,8 @@ class HHTM_Frontend {
             // Fill in grid for booking dates
             foreach ($dates as $date) {
                 if ($date >= $checkin && $date < $checkout) {
-                    if (!isset($grid[$room_name][$date])) {
-                        $grid[$room_name][$date] = array(
+                    if (!isset($grid[$grid_key][$date])) {
+                        $grid[$grid_key][$date] = array(
                             'booking_id'  => $booking['booking_id'],
                             'booking_ref' => $booking['booking_reference_id'],
                             'bed_type'    => $bed_type,
@@ -335,42 +339,46 @@ class HHTM_Frontend {
                 }
 
                 // Fallback to booking site info
-                if (empty($room_name) && !empty($task['booking_site_name'])) {
-                    $room_name = $task['booking_site_name'];
-                    $room_site_id = isset($task['booking_site_id']) ? $task['booking_site_id'] : '';
+                if (empty($room_site_id) && !empty($task['booking_site_id'])) {
+                    $room_site_id = $task['booking_site_id'];
+                    $room_name = isset($task['booking_site_name']) ? $task['booking_site_name'] : '';
                 }
 
-                // Skip tasks without site assignment
-                if (empty($room_name)) {
+                // Skip tasks without site_id
+                if (empty($room_site_id)) {
                     continue;
                 }
 
                 // Skip excluded sites (using site_id for matching)
-                if ($room_site_id && in_array($room_site_id, $excluded_sites)) {
+                if (in_array($room_site_id, $excluded_sites)) {
                     continue;
                 }
 
                 // Skip sites from excluded categories (using site_id and category_id for matching)
-                if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                if (isset($site_to_category[$room_site_id])) {
                     $site_category_id = $site_to_category[$room_site_id]['category_id'];
                     if (in_array($site_category_id, $excluded_categories)) {
                         continue;
                     }
                 }
 
+                // Use site_id as grid key to consolidate with bookings for same site
+                $grid_key = $room_site_id;
+
                 // Initialize room if not exists
-                if (!isset($grid[$room_name])) {
+                if (!isset($grid[$grid_key])) {
                     // Determine category name (use configured category if site_id matches, otherwise Uncategorized)
                     $category_name = 'Uncategorized';
-                    if ($room_site_id && isset($site_to_category[$room_site_id])) {
+                    if (isset($site_to_category[$room_site_id])) {
                         $category_name = $site_to_category[$room_site_id]['category_name'];
                     }
 
-                    $grid[$room_name] = array(
-                        'category' => $category_name,
-                        'site_id'  => $room_site_id,
+                    $grid[$grid_key] = array(
+                        'category'  => $category_name,
+                        'site_id'   => $room_site_id,
+                        'site_name' => $room_name,
                     );
-                    $rooms[] = $room_name;
+                    $rooms[] = $grid_key;
                 }
 
                 // Get task date (NewBook API returns task_when_date as YYYY-MM-DD)
@@ -390,8 +398,8 @@ class HHTM_Frontend {
                 $task_type_config = isset($task_types_map[$task_type_id]) ? $task_types_map[$task_type_id] : null;
 
                 // Add task to grid
-                if (!isset($grid[$room_name][$task_date])) {
-                    $grid[$room_name][$task_date] = array();
+                if (!isset($grid[$grid_key][$task_date])) {
+                    $grid[$grid_key][$task_date] = array();
                 }
 
                 // Store task info
@@ -411,15 +419,15 @@ class HHTM_Frontend {
                 }
 
                 // If there's already a booking on this date, store task separately
-                if (isset($grid[$room_name][$task_date]['booking_id'])) {
+                if (isset($grid[$grid_key][$task_date]['booking_id'])) {
                     // Initialize tasks array if it doesn't exist
-                    if (!isset($grid[$room_name][$task_date]['tasks'])) {
-                        $grid[$room_name][$task_date]['tasks'] = array();
+                    if (!isset($grid[$grid_key][$task_date]['tasks'])) {
+                        $grid[$grid_key][$task_date]['tasks'] = array();
                     }
-                    $grid[$room_name][$task_date]['tasks'][] = $task_info;
+                    $grid[$grid_key][$task_date]['tasks'][] = $task_info;
                 } else {
                     // No booking on this date, task takes the cell
-                    $grid[$room_name][$task_date] = $task_info;
+                    $grid[$grid_key][$task_date] = $task_info;
                 }
             }
         }
@@ -554,7 +562,7 @@ class HHTM_Frontend {
                         </tr>
                     <?php endif; ?>
                     <tr>
-                        <td class="hhtm-room-cell"><?php echo esc_html($room); ?></td>
+                        <td class="hhtm-room-cell"><?php echo esc_html(isset($grid[$room]['site_name']) ? $grid[$room]['site_name'] : $room); ?></td>
                         <?php
                         $previous_booking = null;
                         foreach ($dates as $date):
