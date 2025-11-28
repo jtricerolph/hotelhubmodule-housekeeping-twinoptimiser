@@ -143,8 +143,11 @@ class HHTM_Frontend {
         // Get custom field name for this location
         $custom_field_name = HHTM_Settings::get_location_custom_field($hotel->location_id);
 
+        // Get categories sort configuration
+        $categories_sort = isset($integration['categories_sort']) ? $integration['categories_sort'] : array();
+
         // Process bookings into grid structure
-        $grid_data = $this->process_bookings($bookings, $start_date, $days, $custom_field_name);
+        $grid_data = $this->process_bookings($bookings, $start_date, $days, $custom_field_name, $categories_sort);
 
         // Check if processing resulted in any rooms
         if (empty($grid_data['rooms'])) {
@@ -166,9 +169,10 @@ class HHTM_Frontend {
      * @param string $start_date       Start date (Y-m-d).
      * @param int    $days             Number of days.
      * @param string $custom_field_name Custom field name for twin detection.
+     * @param array  $categories_sort  Categories and sites sort configuration.
      * @return array Processed grid data.
      */
-    private function process_bookings($bookings, $start_date, $days, $custom_field_name) {
+    private function process_bookings($bookings, $start_date, $days, $custom_field_name, $categories_sort = array()) {
         $grid = array();
         $rooms = array();
 
@@ -176,6 +180,36 @@ class HHTM_Frontend {
         $dates = array();
         for ($i = 0; $i < $days; $i++) {
             $dates[] = date('Y-m-d', strtotime($start_date . ' + ' . $i . ' days'));
+        }
+
+        // Build site-to-category map and exclusion list
+        $site_to_category = array();
+        $excluded_sites = array();
+        $excluded_categories = array();
+        $site_order_map = array();
+
+        if (!empty($categories_sort)) {
+            foreach ($categories_sort as $cat_index => $category) {
+                if (!empty($category['excluded'])) {
+                    $excluded_categories[] = $category['name'];
+                    continue;
+                }
+
+                if (isset($category['sites'])) {
+                    foreach ($category['sites'] as $site_index => $site) {
+                        $site_name = $site['site_name'];
+                        $site_to_category[$site_name] = $category['name'];
+                        $site_order_map[$site_name] = array(
+                            'category_order' => $cat_index,
+                            'site_order'     => $site_index,
+                        );
+
+                        if (!empty($site['excluded'])) {
+                            $excluded_sites[] = $site_name;
+                        }
+                    }
+                }
+            }
         }
 
         // Process each booking
@@ -188,9 +222,21 @@ class HHTM_Frontend {
                 continue;
             }
 
+            // Skip excluded sites
+            if (in_array($room_name, $excluded_sites)) {
+                continue;
+            }
+
+            // Skip sites from excluded categories
+            if (isset($site_to_category[$room_name]) && in_array($site_to_category[$room_name], $excluded_categories)) {
+                continue;
+            }
+
             // Initialize room if not exists
             if (!isset($grid[$room_name])) {
-                $grid[$room_name] = array();
+                $grid[$room_name] = array(
+                    'category' => isset($site_to_category[$room_name]) ? $site_to_category[$room_name] : 'Uncategorized',
+                );
                 $rooms[] = $room_name;
             }
 
@@ -219,8 +265,29 @@ class HHTM_Frontend {
             }
         }
 
-        // Sort rooms
-        sort($rooms);
+        // Sort rooms by category and site order
+        if (!empty($site_order_map)) {
+            usort($rooms, function($a, $b) use ($site_order_map) {
+                $a_order = isset($site_order_map[$a]) ? $site_order_map[$a] : array('category_order' => 9999, 'site_order' => 9999);
+                $b_order = isset($site_order_map[$b]) ? $site_order_map[$b] : array('category_order' => 9999, 'site_order' => 9999);
+
+                // First sort by category order
+                if ($a_order['category_order'] !== $b_order['category_order']) {
+                    return $a_order['category_order'] - $b_order['category_order'];
+                }
+
+                // Then sort by site order within category
+                if ($a_order['site_order'] !== $b_order['site_order']) {
+                    return $a_order['site_order'] - $b_order['site_order'];
+                }
+
+                // Fallback to alphabetical
+                return strcasecmp($a, $b);
+            });
+        } else {
+            // Default alphabetical sort
+            sort($rooms);
+        }
 
         return array(
             'grid'  => $grid,
@@ -303,7 +370,25 @@ class HHTM_Frontend {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($rooms as $room): ?>
+                <?php
+                // Group rooms by category for rendering
+                $current_category = null;
+                $column_count = count($dates) + 1; // +1 for room column
+
+                foreach ($rooms as $room):
+                    // Get category for this room
+                    $room_category = isset($grid[$room]['category']) ? $grid[$room]['category'] : 'Uncategorized';
+
+                    // Render category header if category changed
+                    if ($current_category !== $room_category):
+                        $current_category = $room_category;
+                        ?>
+                        <tr class="hhtm-category-header">
+                            <td colspan="<?php echo esc_attr($column_count); ?>">
+                                <strong><?php echo esc_html($room_category); ?></strong>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                     <tr>
                         <td class="hhtm-room-cell"><?php echo esc_html($room); ?></td>
                         <?php
