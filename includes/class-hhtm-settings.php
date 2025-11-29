@@ -377,7 +377,7 @@ class HHTM_Settings {
         $locations = array();
         foreach ($hotels as $hotel) {
             $location = new stdClass();
-            $location->workforce_id = $hotel->id;  // Use hotel ID as workforce_id
+            $location->workforce_id = $hotel->location_id;  // Use workforce location_id for settings compatibility
             $location->name = $hotel->name;
             $locations[] = $location;
         }
