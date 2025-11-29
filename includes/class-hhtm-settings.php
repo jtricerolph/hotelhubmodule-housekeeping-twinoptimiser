@@ -50,7 +50,7 @@ class HHTM_Settings {
 
             <?php if (empty($locations)): ?>
                 <div class="notice notice-warning">
-                    <p><?php _e('No workforce locations found. Please ensure the Workforce Authentication plugin is active and locations have been synced.', 'hhtm'); ?></p>
+                    <p><?php _e('No hotels found. Please ensure the Hotel Hub App plugin is active and hotels have been configured.', 'hhtm'); ?></p>
                 </div>
             <?php else: ?>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
@@ -74,6 +74,7 @@ class HHTM_Settings {
                                 $custom_field_names = isset($location_settings[$location_id]['custom_field_names']) ? $location_settings[$location_id]['custom_field_names'] : '';
                                 $custom_field_values = isset($location_settings[$location_id]['custom_field_values']) ? $location_settings[$location_id]['custom_field_values'] : '';
                                 $notes_search_terms = isset($location_settings[$location_id]['notes_search_terms']) ? $location_settings[$location_id]['notes_search_terms'] : '';
+                                $excluded_terms = isset($location_settings[$location_id]['excluded_terms']) ? $location_settings[$location_id]['excluded_terms'] : '';
                                 $normal_booking_color = isset($location_settings[$location_id]['normal_booking_color']) ? $location_settings[$location_id]['normal_booking_color'] : '#ce93d8';
                                 $twin_booking_color = isset($location_settings[$location_id]['twin_booking_color']) ? $location_settings[$location_id]['twin_booking_color'] : '#81c784';
                                 $potential_twin_color = isset($location_settings[$location_id]['potential_twin_color']) ? $location_settings[$location_id]['potential_twin_color'] : '#FFB74D';
@@ -182,6 +183,20 @@ class HHTM_Settings {
                                                 <?php _e('Comma-separated list of terms to search for in booking notes content (case-insensitive partial match).', 'hhtm'); ?>
                                             </p>
                                         </div>
+
+                                        <div class="hhtm-setting-row">
+                                            <label><strong><?php _e('Excluded Terms (CSV)', 'hhtm'); ?></strong></label>
+                                            <input
+                                                type="text"
+                                                name="hhtm_location_settings[<?php echo esc_attr($location_id); ?>][excluded_terms]"
+                                                value="<?php echo esc_attr($excluded_terms); ?>"
+                                                class="large-text"
+                                                placeholder="Double or Twin:, Suite or Twin:"
+                                            >
+                                            <p class="description">
+                                                <?php _e('Comma-separated list of terms to exclude from notes before searching (case-sensitive). Example: "Double or Twin:" will be removed before checking for "twin" match.', 'hhtm'); ?>
+                                            </p>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -208,6 +223,7 @@ class HHTM_Settings {
                     <ul>
                         <li><strong><?php _e('Custom Fields (Confirmed Twins):', 'hhtm'); ?></strong> <?php _e('Checks specified custom field names for any of the configured values (partial, case-insensitive match)', 'hhtm'); ?></li>
                         <li><strong><?php _e('Booking Notes (Potential Twins):', 'hhtm'); ?></strong> <?php _e('Searches all booking note content for configured search terms (partial, case-insensitive match) - only triggers potential twin color if custom fields don\'t confirm', 'hhtm'); ?></li>
+                        <li><strong><?php _e('Excluded Terms:', 'hhtm'); ?></strong> <?php _e('Case-sensitive terms that are removed from notes before searching. Useful for filtering out ambiguous phrases like "Double or Twin:" when you only want to detect actual twin selections.', 'hhtm'); ?></li>
                         <li><strong><?php _e('Legacy Detection (Confirmed Twins):', 'hhtm'); ?></strong> <?php _e('Falls back to checking the legacy custom field for "twin", "2 x single", or "2x single" if enhanced detection is not configured', 'hhtm'); ?></li>
                     </ul>
                 </div>
@@ -334,6 +350,7 @@ class HHTM_Settings {
                 'custom_field_names'   => sanitize_text_field($settings['custom_field_names']),
                 'custom_field_values'  => sanitize_text_field($settings['custom_field_values']),
                 'notes_search_terms'   => sanitize_text_field($settings['notes_search_terms']),
+                'excluded_terms'       => sanitize_text_field($settings['excluded_terms']),
                 'normal_booking_color' => sanitize_hex_color($settings['normal_booking_color']),
                 'twin_booking_color'   => sanitize_hex_color($settings['twin_booking_color']),
                 'potential_twin_color' => sanitize_hex_color($settings['potential_twin_color']),
@@ -355,32 +372,33 @@ class HHTM_Settings {
     }
 
     /**
-     * Get workforce locations from database.
+     * Get workforce locations from Hotel Hub.
      *
      * @return array Array of location objects.
      */
     private function get_workforce_locations() {
-        global $wpdb;
-
-        if (!defined('WFA_TABLE_PREFIX')) {
+        // Check if Hotel Hub App is available
+        if (!function_exists('hha')) {
             return array();
         }
 
-        $table_name = $wpdb->prefix . WFA_TABLE_PREFIX . 'locations';
+        // Get all active hotels from Hotel Hub
+        $hotels = hha()->hotels->get_active();
 
-        // Check if table exists
-        if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") != $table_name) {
+        if (empty($hotels)) {
             return array();
         }
 
-        // Get locations from cached table
-        $locations = $wpdb->get_results(
-            "SELECT workforce_id, name
-             FROM {$table_name}
-             ORDER BY name ASC"
-        );
+        // Format as location objects (matching old structure for backward compatibility)
+        $locations = array();
+        foreach ($hotels as $hotel) {
+            $location = new stdClass();
+            $location->workforce_id = $hotel->id;  // Use hotel ID as workforce_id
+            $location->name = $hotel->name;
+            $locations[] = $location;
+        }
 
-        return $locations ? $locations : array();
+        return $locations;
     }
 
     /**
@@ -437,6 +455,7 @@ class HHTM_Settings {
             'custom_field_names'   => '',
             'custom_field_values'  => '',
             'notes_search_terms'   => '',
+            'excluded_terms'       => '',
             'normal_booking_color' => '#ce93d8',
             'twin_booking_color'   => '#81c784',
             'potential_twin_color' => '#FFB74D',

@@ -708,6 +708,8 @@ class HHTM_Frontend {
         // Enhanced notes search - this is POTENTIAL detection (not confirmed)
         $notes_search_terms = !empty($location_settings['notes_search_terms']) ?
             array_map('trim', explode(',', $location_settings['notes_search_terms'])) : array();
+        $excluded_terms = !empty($location_settings['excluded_terms']) ?
+            array_map('trim', explode(',', $location_settings['excluded_terms'])) : array();
 
         if (!empty($notes_search_terms)) {
             if (isset($booking['notes']) && is_array($booking['notes'])) {
@@ -717,7 +719,17 @@ class HHTM_Frontend {
                         continue;
                     }
 
-                    $note_content_lower = strtolower($note_content);
+                    // Apply exclusions (case-sensitive removal)
+                    $processed_note = $note_content;
+                    if (!empty($excluded_terms)) {
+                        foreach ($excluded_terms as $excluded_term) {
+                            if (!empty($excluded_term)) {
+                                $processed_note = str_replace($excluded_term, '', $processed_note);
+                            }
+                        }
+                    }
+
+                    $note_content_lower = strtolower($processed_note);
 
                     // Check against configured search terms
                     foreach ($notes_search_terms as $search_term) {
