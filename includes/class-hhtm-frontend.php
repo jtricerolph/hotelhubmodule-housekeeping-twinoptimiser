@@ -215,8 +215,8 @@ class HHTM_Frontend {
             error_log('HHTM: First booking structure: ' . print_r($bookings[0], true));
         }
 
-        // Get custom field name for this location
-        $custom_field_name = HHTM_Settings::get_location_custom_field($hotel->location_id);
+        // Use hardcoded legacy field name for backward compatibility
+        $custom_field_name = 'Bed Type';
 
         // Get categories sort configuration
         $categories_sort = isset($integration['categories_sort']) ? $integration['categories_sort'] : array();

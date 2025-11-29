@@ -70,7 +70,6 @@ class HHTM_Settings {
                                 <?php
                                 $location_id = $location->workforce_id;
                                 $is_enabled = isset($location_settings[$location_id]['enabled']) ? (bool) $location_settings[$location_id]['enabled'] : false;
-                                $custom_field = isset($location_settings[$location_id]['custom_field']) ? $location_settings[$location_id]['custom_field'] : 'Bed Type';
                                 $custom_field_names = isset($location_settings[$location_id]['custom_field_names']) ? $location_settings[$location_id]['custom_field_names'] : '';
                                 $custom_field_values = isset($location_settings[$location_id]['custom_field_values']) ? $location_settings[$location_id]['custom_field_values'] : '';
                                 $notes_search_terms = isset($location_settings[$location_id]['notes_search_terms']) ? $location_settings[$location_id]['notes_search_terms'] : '';
@@ -126,20 +125,6 @@ class HHTM_Settings {
                                                     <span class="hhtm-color-value"><?php echo esc_html($potential_twin_color); ?></span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="hhtm-setting-row">
-                                            <label><strong><?php _e('Legacy Custom Field (Deprecated)', 'hhtm'); ?></strong></label>
-                                            <input
-                                                type="text"
-                                                name="hhtm_location_settings[<?php echo esc_attr($location_id); ?>][custom_field]"
-                                                value="<?php echo esc_attr($custom_field); ?>"
-                                                class="regular-text"
-                                                placeholder="Bed Type"
-                                            >
-                                            <p class="description">
-                                                <?php _e('Legacy field - use the enhanced detection fields below instead.', 'hhtm'); ?>
-                                            </p>
                                         </div>
 
                                         <div class="hhtm-setting-row">
@@ -346,7 +331,6 @@ class HHTM_Settings {
         foreach ($location_settings as $location_id => $settings) {
             $sanitized_settings[absint($location_id)] = array(
                 'enabled'              => isset($settings['enabled']) ? (bool) $settings['enabled'] : false,
-                'custom_field'         => sanitize_text_field($settings['custom_field']),
                 'custom_field_names'   => sanitize_text_field($settings['custom_field_names']),
                 'custom_field_values'  => sanitize_text_field($settings['custom_field_values']),
                 'notes_search_terms'   => sanitize_text_field($settings['notes_search_terms']),
@@ -402,23 +386,6 @@ class HHTM_Settings {
     }
 
     /**
-     * Get custom field name for a location.
-     *
-     * @param int $location_id Workforce location ID.
-     * @return string Custom field name.
-     */
-    public static function get_location_custom_field($location_id) {
-        $location_settings = get_option('hhtm_location_settings', array());
-
-        if (isset($location_settings[$location_id]['custom_field'])) {
-            return $location_settings[$location_id]['custom_field'];
-        }
-
-        // Default to 'Bed Type'
-        return 'Bed Type';
-    }
-
-    /**
      * Check if Twin Optimiser is enabled for a location.
      *
      * @param int $location_id Workforce location ID.
@@ -451,7 +418,6 @@ class HHTM_Settings {
         // Return defaults
         return array(
             'enabled'              => false,
-            'custom_field'         => 'Bed Type',
             'custom_field_names'   => '',
             'custom_field_values'  => '',
             'notes_search_terms'   => '',
