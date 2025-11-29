@@ -376,6 +376,11 @@ class HHTM_Settings {
         // Format as location objects (matching old structure for backward compatibility)
         $locations = array();
         foreach ($hotels as $hotel) {
+            // Skip hotels without a location_id
+            if (empty($hotel->location_id)) {
+                continue;
+            }
+
             $location = new stdClass();
             $location->workforce_id = $hotel->location_id;  // Use workforce location_id for settings compatibility
             $location->name = $hotel->name;
