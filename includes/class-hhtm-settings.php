@@ -74,9 +74,9 @@ class HHTM_Settings {
                                 $custom_field_values = isset($location_settings[$location_id]['custom_field_values']) ? $location_settings[$location_id]['custom_field_values'] : '';
                                 $notes_search_terms = isset($location_settings[$location_id]['notes_search_terms']) ? $location_settings[$location_id]['notes_search_terms'] : '';
                                 $excluded_terms = isset($location_settings[$location_id]['excluded_terms']) ? $location_settings[$location_id]['excluded_terms'] : '';
-                                $normal_booking_color = isset($location_settings[$location_id]['normal_booking_color']) ? $location_settings[$location_id]['normal_booking_color'] : '#ce93d8';
-                                $twin_booking_color = isset($location_settings[$location_id]['twin_booking_color']) ? $location_settings[$location_id]['twin_booking_color'] : '#81c784';
-                                $potential_twin_color = isset($location_settings[$location_id]['potential_twin_color']) ? $location_settings[$location_id]['potential_twin_color'] : '#FFB74D';
+                                $normal_booking_color = isset($location_settings[$location_id]['normal_booking_color']) ? $location_settings[$location_id]['normal_booking_color'] : '#9e9e9e';
+                                $twin_booking_color = isset($location_settings[$location_id]['twin_booking_color']) ? $location_settings[$location_id]['twin_booking_color'] : '#26b823';
+                                $potential_twin_color = isset($location_settings[$location_id]['potential_twin_color']) ? $location_settings[$location_id]['potential_twin_color'] : '#ffc670';
                                 ?>
                                 <tr>
                                     <td style="text-align: center;">
@@ -422,9 +422,9 @@ class HHTM_Settings {
             'custom_field_values'  => '',
             'notes_search_terms'   => '',
             'excluded_terms'       => '',
-            'normal_booking_color' => '#ce93d8',
-            'twin_booking_color'   => '#81c784',
-            'potential_twin_color' => '#FFB74D',
+            'normal_booking_color' => '#9e9e9e',
+            'twin_booking_color'   => '#26b823',
+            'potential_twin_color' => '#ffc670',
         );
     }
 
