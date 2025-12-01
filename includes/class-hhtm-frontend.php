@@ -209,12 +209,6 @@ class HHTM_Frontend {
             return;
         }
 
-        // Debug: Log booking structure
-        error_log('HHTM: Found ' . count($bookings) . ' bookings and ' . count($tasks) . ' tasks');
-        if (!empty($bookings)) {
-            error_log('HHTM: First booking structure: ' . print_r($bookings[0], true));
-        }
-
         // Use hardcoded legacy field name for backward compatibility
         $custom_field_name = 'Bed Type';
 
