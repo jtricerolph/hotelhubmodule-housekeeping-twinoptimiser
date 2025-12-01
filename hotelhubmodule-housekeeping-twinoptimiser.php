@@ -124,7 +124,7 @@ class HotelHub_Module_Twin_Optimiser {
             'name'           => __('Twin Optimiser', 'hhtm'),
             'description'    => __('Identify twin room opportunities to optimize bookings', 'hhtm'),
             'department'     => 'housekeeping',
-            'icon'           => 'dashicons-groups',
+            'icon'           => 'groups',
             'color'          => '#FFD700',
             'order'          => 10,
             'permissions'    => array('hhtm_access_twin_optimiser'),
